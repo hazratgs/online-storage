@@ -1,0 +1,20 @@
+{
+  "name": "kurtuba",
+  "version": "1.0.0",
+  "description": "Nodejs key/value storage",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "key/value",
+    "storage",
+    "db"
+  ],
+  "author": "hazratgs",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2"
+  }
+}
