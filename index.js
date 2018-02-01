@@ -10,7 +10,7 @@ const bodyParser = require('body-parser')
 const conf = require('./conf.json')
 
 // Роуты приложения
-const routes = require('./app/routes')
+const application = require('./app')
 
 app.use(bodyParser.json({ limit: '5mb' }))
 app.use(bodyParser.urlencoded({
@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({
 }))
 
 // Основной роутер
-routes(app)
+application(app)
 
 // Запускаем сервер
 app.listen(conf.port, () => console.log(`Express app run to port: ${conf.port}`))
