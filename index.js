@@ -17,8 +17,8 @@ const application = require('./app')
 
 app.use(bodyParser.json({ limit: '5mb' }))
 app.use(bodyParser.urlencoded({
-	extended: true,
-	limit: '5mb'
+  extended: true,
+  limit: '5mb'
 }))
 
 // Основной роутер

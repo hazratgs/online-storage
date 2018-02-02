@@ -1,4 +1,4 @@
 {
-    "port": 3199,
-    "mongoose": "mongodb://localhost/kurtuba"
+  "port": 3199,
+  "mongoose": "mongodb://localhost/kurtuba"
 }
