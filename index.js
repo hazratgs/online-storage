@@ -8,6 +8,9 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const conf = require('./conf.json')
+const cors = require('cors')
+
+app.use(cors())
 
 // Роуты приложения
 const application = require('./app')
