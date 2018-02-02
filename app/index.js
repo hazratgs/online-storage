@@ -27,6 +27,9 @@ module.exports = app => {
 		try {
 			const token = req.params.token
 
+			// Не переданы данные
+			if (Object.keys(req.body).length == 0) throw new Error()
+
 			// Проверка токена 
 			const findToken = await TokenModel.Token.findOne({ token: token })
 			if (!findToken) throw new Error()
