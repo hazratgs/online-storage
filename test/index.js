@@ -2,6 +2,7 @@ require('../index')
 const chai = require('chai')
 const conf = require('../conf.json')
 const axios = require('axios')
+const isGuid = require('is-guid').isGuid
 
 // Models
 const TokenModel = require('../app//models/token');
@@ -14,7 +15,7 @@ describe('POST /create', () => {
   it('Create a new token', done => {
     axios.post(`http://localhost:${conf.port}/create`)
       .then(res => {
-        if (res.data.status && res.data.token.length > 30) {
+        if (res.data.status && isGuid(res.data.token)) {
           token = res.data.token
           done()
         }
