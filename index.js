@@ -26,3 +26,6 @@ application(app)
 
 // Запускаем сервер
 app.listen(conf.port, () => console.log(`Express app run to port: ${conf.port}`))
+
+// Для тестирования
+module.exports = app
