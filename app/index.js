@@ -5,6 +5,19 @@ const guid = require('uuid/v1')
 const TokenModel = require('./models/token');
 const StorageModel = require('./models/storage')
 
+// Checking the presence of the token in the Database
+const tokenChecking = async token => {
+  const findToken = await TokenModel.Token.findOne({ token: token })
+  if (!findToken) throw new Error()
+  return true
+}
+
+const getStorage = async token => {
+  const storage = await StorageModel.Storage.findOne({ token: token })
+  if (!storage) throw new Error()
+  return storage
+}
+
 module.exports = app => {
   // Creating a token
   app.post('/create', async (req, res) => {
@@ -26,13 +39,10 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
+      tokenChecking(token)
 
       // Data not sent
       if (Object.keys(req.body).length == 0) throw new Error()
-
-      // Check token
-      const findToken = await TokenModel.Token.findOne({ token: token })
-      if (!findToken) throw new Error()
 
       // Data in storage
       const storage = await StorageModel.Storage.findOne({ token: token })
@@ -56,14 +66,10 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-
-      // Check token
-      const findToken = await TokenModel.Token.findOne({ token: token })
-      if (!findToken) throw new Error()
+      tokenChecking(token)
 
       // Data in storage
-      const storage = await StorageModel.Storage.findOne({ token: token })
-      if (!storage) throw new Error()
+      const storage = await getStorage(token)
 
       // If there is no key in storage
       if (!storage.storage[key]) throw new Error()
@@ -84,14 +90,10 @@ module.exports = app => {
   app.get('/:token/get/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-
-      // Check token
-      const findToken = await TokenModel.Token.findOne({ token: token })
-      if (!findToken) throw new Error()
+      tokenChecking(token)
 
       // Data in storage
-      const storage = await StorageModel.Storage.findOne({ token: token })
-      if (!storage) throw new Error()
+      const storage = await getStorage(token)
 
       // We return all data
       if (key === '__ALL__') {
