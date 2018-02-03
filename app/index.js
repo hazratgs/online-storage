@@ -25,7 +25,7 @@ module.exports = app => {
   // Добавление данных
   app.post('/:token/set', async (req, res) => {
     try {
-      const token = req.params.token
+      const { token } = req.params
 
       // Не переданы данные
       if (Object.keys(req.body).length == 0) throw new Error()
@@ -88,8 +88,7 @@ module.exports = app => {
   // Добавление данных
   app.get('/:token/get/:key', async (req, res) => {
     try {
-      const token = req.params.token
-      const key = req.params.key
+      const { token, key } = req.params
 
       // Проверка токена 
       const findToken = await TokenModel.Token.findOne({ token: token })
