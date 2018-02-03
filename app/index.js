@@ -52,6 +52,39 @@ module.exports = app => {
     }
   })
 
+  // Удаление ствойства
+  app.delete('/:token/remove/:key', async (req, res) => {
+    try {
+      const { token, key } = req.params
+
+      // Проверка токена 
+      const findToken = await TokenModel.Token.findOne({ token: token })
+      if (!findToken) throw new Error()
+
+      // Данные в storage
+      const storage = await StorageModel.Storage.findOne({ token: token })
+
+      // Данных в storage нет
+      if (!storage) throw new Error()
+
+      // Если нет key в storage
+      if (!storage.storage[key]) throw new Error('Запрошеный ключ отсутствует')
+
+      // Клонируем storage
+      const data = { ...storage.storage }
+
+      // Удаляем элемент
+      delete data[key]
+
+      // Обновление данных
+      await StorageModel.Storage.update({ token: token }, { $set: { storage: data } })
+
+      res.json({ status: true, message: 'Успешно удален' })
+    } catch (e) {
+      res.status(500).send({ status: false, description: 'Ошибка добавления данных' })
+    }
+  })
+
   // Добавление данных
   app.get('/:token/get/:key', async (req, res) => {
     try {
