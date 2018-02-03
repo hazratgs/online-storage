@@ -15,8 +15,9 @@ describe('POST /create', () => {
   it('Create a new token', done => {
     axios.post(`http://localhost:${conf.port}/create`)
       .then(res => {
-        if (res.data.status && isGuid(res.data.token)) {
-          token = res.data.token
+        if (res.data.status && isGuid(res.data.data)) {
+          token = res.data.data
+          console.log('New token: ', token)
           done()
         }
       })

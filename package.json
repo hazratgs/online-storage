@@ -1,7 +1,7 @@
 {
   "name": "kurtuba",
   "version": "1.0.0",
-  "description": "Nodejs key/value storage",
+  "description": "⚡️A simple key-value storage based on MongoDB",
   "main": "index.js",
   "scripts": {
     "start": "pm2 start index.js",

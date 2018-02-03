@@ -1,5 +1,5 @@
 /*!
- * Kurtuba - key/value storage
+ * Kurtuba - free cloud key/value storage
  * Copyright(c) 2018 @hazratgs
  * MIT Licensed
 */
@@ -12,17 +12,15 @@ const cors = require('cors')
 
 app.use(cors())
 
-// Роуты приложения
-const application = require('./app')
-
 app.use(bodyParser.json({ limit: '5mb' }))
 app.use(bodyParser.urlencoded({
   extended: true,
   limit: '5mb'
 }))
 
-// Основной роутер
+// Routes
+const application = require('./app')
 application(app)
 
-// Запускаем сервер
+// Start server
 app.listen(conf.port, () => console.log(`Express app run to port: ${conf.port}`))

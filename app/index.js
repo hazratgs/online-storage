@@ -6,122 +6,115 @@ const TokenModel = require('./models/token');
 const StorageModel = require('./models/storage')
 
 module.exports = app => {
-  // Создание токена
+  // Creating a token
   app.post('/create', async (req, res) => {
     try {
-      // Новый уникальный uuid токен
+      // New unique uuid token
       const token = guid()
 
-      // Сохраняем в db
+      // Save to db
       await new TokenModel.Token({ token: token }).save()
 
-      // Передача токена клиенту
-      res.json({ status: true, token: token })
+      // Sending the token to the client
+      res.json({ status: true, data: token })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Ошибка при создании токена' })
+      res.status(500).send({ status: false, description: 'Error creating token' })
     }
   })
 
-  // Добавление данных
+  // Adding Data
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
 
-      // Не переданы данные
+      // Data not sent
       if (Object.keys(req.body).length == 0) throw new Error()
 
-      // Проверка токена 
+      // Check token
       const findToken = await TokenModel.Token.findOne({ token: token })
       if (!findToken) throw new Error()
 
-      // Данные в storage
+      // Data in storage
       const storage = await StorageModel.Storage.findOne({ token: token })
 
       if (storage) {
-        // Мердж новых и старых данных (перезапись)
+        // Merging new and old data (overwriting)
         const data = { ...storage.storage, ...req.body }
-        // Обновление данных
+        // Updating data
         await StorageModel.Storage.update({ token: token }, { $set: { storage: data } })
       } else {
         await new StorageModel.Storage({ token: token, storage: req.body }).save()
       }
 
-      res.json({ status: true, message: 'Успешно добавлено' })
+      res.json({ status: true, message: 'Successfully added' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Ошибка добавления данных' })
+      res.status(500).send({ status: false, description: 'Error adding data' })
     }
   })
 
-  // Удаление ствойства
+  // Deletion of the property
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
 
-      // Проверка токена 
+      // Check token
       const findToken = await TokenModel.Token.findOne({ token: token })
       if (!findToken) throw new Error()
 
-      // Данные в storage
+      // Data in storage
       const storage = await StorageModel.Storage.findOne({ token: token })
-
-      // Данных в storage нет
       if (!storage) throw new Error()
 
-      // Если нет key в storage
-      if (!storage.storage[key]) throw new Error('Запрошеный ключ отсутствует')
+      // If there is no key in storage
+      if (!storage.storage[key]) throw new Error()
 
-      // Клонируем storage
       const data = { ...storage.storage }
-
-      // Удаляем элемент
       delete data[key]
 
-      // Обновление данных
+      // Updating the data
       await StorageModel.Storage.update({ token: token }, { $set: { storage: data } })
 
-      res.json({ status: true, message: 'Успешно удален' })
+      res.json({ status: true, message: 'Successfully deleted' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Ошибка добавления данных' })
+      res.status(500).send({ status: false, description: 'Uninstall error' })
     }
   })
 
-  // Добавление данных
+  // Receiving data
   app.get('/:token/get/:key', async (req, res) => {
     try {
       const { token, key } = req.params
 
-      // Проверка токена 
+      // Check token
       const findToken = await TokenModel.Token.findOne({ token: token })
       if (!findToken) throw new Error()
 
-      // Данные в storage
+      // Data in storage
       const storage = await StorageModel.Storage.findOne({ token: token })
-
-      // Данных в storage нет
       if (!storage) throw new Error()
 
-      // Отдаем все данные
+      // We return all data
       if (key === '__ALL__') {
         return res.send({ status: true, data: storage.storage })
       }
 
-      // Если нет key в storage
+      // If there is no key in storage
       if (!storage.storage[key]) throw new Error()
 
-      // Отдаем данные пользователю
+      // We return the data to the user
       res.send({ status: true, data: storage.storage[key] })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Ошибка' })
+      res.status(500).send({ status: false, description: 'Error' })
     }
   })
 
-  // Если нет обработчиков, 404
+  // If there are no handlers, 404
   app.use((req, res, next) => {
-    res.status(404).send({ status: false, description: "Not found" })
+    res.status(404).send({ status: false, description: "Not Found: method not found" })
   })
 
-  // Возникла ошибка
+  // There was an error
   app.use((err, req, res, next) => {
-    res.status(err.status || 500).send({ status: false, description: err.message })
+    res.status(err.status || 500).send({ status: false, description: 'Not Found: method not found' })
   })
 }
