@@ -103,7 +103,7 @@ module.exports = app => {
 
       // Отдаем все данные
       if (key === '__ALL__') {
-        res.send({ status: true, data: storage.storage })
+        return res.send({ status: true, data: storage.storage })
       }
 
       // Если нет key в storage
