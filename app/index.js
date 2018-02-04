@@ -86,6 +86,21 @@ module.exports = app => {
     }
   })
 
+  // Clearing the data store
+  app.delete('/:token/delete', async (req, res) => {
+    try {
+      const { token } = req.params
+      tokenChecking(token)
+
+      // Delete storage
+      await StorageModel.Storage.remove({ token: token })
+
+      res.json({ status: true, message: 'Storage deleted' })
+    } catch (e) {
+      res.status(500).send({ status: false, description: 'Uninstall error' })
+    }
+  })
+
   // Receiving data
   app.get('/:token/get/:key', async (req, res) => {
     try {
