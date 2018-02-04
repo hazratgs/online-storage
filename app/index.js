@@ -95,16 +95,27 @@ module.exports = app => {
       // Data in storage
       const storage = await getStorage(token)
 
-      // We return all data
-      if (key === '__ALL__') {
-        return res.send({ status: true, data: storage.storage })
-      }
-
       // If there is no key in storage
       if (!storage.storage[key]) throw new Error()
 
       // We return the data to the user
       res.send({ status: true, data: storage.storage[key] })
+    } catch (e) {
+      res.status(500).send({ status: false, description: 'Error' })
+    }
+  })
+
+  // We return all data
+  app.get('/:token/getAll', async (req, res) => {
+    try {
+      const { token } = req.params
+      tokenChecking(token)
+
+      // Data in storage
+      const storage = await getStorage(token)
+
+      // We return all data
+      return res.send({ status: true, data: storage.storage })
     } catch (e) {
       res.status(500).send({ status: false, description: 'Error' })
     }
