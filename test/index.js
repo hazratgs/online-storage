@@ -45,6 +45,18 @@ describe('GET /get', () => {
   })
 })
 
+describe('GET /getAll', () => {
+  it('Get counter value', done => {
+    axios.get(`http://localhost:${conf.port}/${token}/getAll`)
+      .then(res => {
+        if (res.data.status && res.data.data) {
+          console.log('Counter: ', res.data.data)
+          done()
+        }
+      })
+  })
+})
+
 describe('UPDATE /update', () => {
   it('Update counter', done => {
     axios.post(`http://localhost:${conf.port}/${token}/set`, {
