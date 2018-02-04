@@ -88,3 +88,14 @@ describe('DELETE /remove', () => {
   })
 })
 
+describe('DELETE /delete', () => {
+  it('Remove counter', done => {
+    axios.delete(`http://localhost:${conf.port}/${token}/delete`)
+      .then(res => {
+        if (res.data.status) {
+          axios.get(`http://localhost:${conf.port}/${token}/getAll`)
+            .catch(e => done())
+        }
+      })
+  })
+})
