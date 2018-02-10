@@ -9,7 +9,7 @@ const StorageModel = require('./models/storage')
 const tokenChecking = async token => {
   const findToken = await TokenModel.Token.findOne({ token: token })
   if (!findToken) throw new Error()
-  return true
+  return findToken
 }
 
 const getStorage = async token => {
@@ -18,20 +18,45 @@ const getStorage = async token => {
   return storage
 }
 
+const domainVerification = (origin, accessDomains) => {
+  if (!accessDomains) return false
+  if (accessDomains.length && !accessDomains.includes(origin)) {
+    throw new Error()
+  }
+}
+
 module.exports = app => {
   // Creating a token
   app.post('/create', async (req, res) => {
     try {
+      // Дополнительные данные защиты хранилища
+      const { domains } = req.body
+
       // New unique uuid token
       const token = guid()
 
+      // Данные по умолчанию
+      const tokenParam = {
+        token: token
+      }
+
+      // Cписок доменов для доступа к хранилищу
+      if (domains) {
+        // Если передан массив, сохраняем как есть
+        if (Array.isArray(domains)) tokenParam.domains = domains
+        // Если передана строка, оборачиваем в массив
+        if (typeof domains === 'string') tokenParam.domains = [domains]
+        // Если передано boolean true, сохраняем origin
+        if (typeof domains === 'boolean') tokenParam.domains = [req.get('origin')]
+      }
+
       // Save to db
-      await new TokenModel.Token({ token: token }).save()
+      await new TokenModel.Token(tokenParam).save()
 
       // Sending the token to the client
-      res.json({ status: true, data: token })
+      res.json({ status: true, data: tokenParam })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error creating token' })
+      res.status(500).send({ status: false, description: e.message })
     }
   })
 
@@ -39,7 +64,12 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
-      tokenChecking(token)
+      const origin = req.get('origin')
+      // Параметры токена
+      const tokenParam = tokenChecking(token)
+
+      // Проверка доступа с домена, отправаивший запрос
+      domainVerification(tokenParam.domains, origin)
 
       // Data not sent
       if (Object.keys(req.body).length == 0) throw new Error()
@@ -66,7 +96,12 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      tokenChecking(token)
+      const origin = req.get('origin')
+      // Параметры токена
+      const tokenParam = tokenChecking(token)
+
+      // Проверка доступа с домена, отправаивший запрос
+      domainVerification(tokenParam.domains, origin)
 
       // Data in storage
       const storage = await getStorage(token)
@@ -90,7 +125,12 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
-      tokenChecking(token)
+      const origin = req.get('origin')
+      // Параметры токена
+      const tokenParam = tokenChecking(token)
+
+      // Проверка доступа с домена, отправаивший запрос
+      domainVerification(tokenParam.domains, origin)
 
       // Delete storage
       await StorageModel.Storage.remove({ token: token })
