@@ -17,7 +17,6 @@ describe('POST /create', () => {
       .then(res => {
         if (res.data.status && isGuid(res.data.data.token)) {
           token = res.data.data.token
-          console.log('New token: ', res.data.data)
           done()
         }
       })
@@ -30,7 +29,6 @@ describe('POST /set', () => {
       counter: 1
     })
       .then(res => done())
-      .catch(e => console.log('Origin не соответствует'))
   })
 })
 
@@ -39,7 +37,6 @@ describe('GET /get', () => {
     axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
       .then(res => {
         if (res.data.status && res.data.data) {
-          console.log('Counter: ', res.data.data)
           done()
         }
       })
@@ -51,7 +48,6 @@ describe('GET /getAll', () => {
     axios.get(`http://localhost:${conf.port}/${token}/getAll`)
       .then(res => {
         if (res.data.status && res.data.data) {
-          console.log('Counter: ', res.data.data)
           done()
         }
       })
@@ -68,7 +64,6 @@ describe('UPDATE /update', () => {
           axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
             .then(res => {
               if (res.data.status && res.data.data === 2) {
-                console.log('Counter: ', res.data.data)
                 done()
               }
             })
@@ -100,3 +95,40 @@ describe('DELETE /delete', () => {
       })
   })
 })
+
+describe('POST /create', () => {
+  it('Checking access from another domain to the storage', done => {
+    axios.post(`http://localhost:${conf.port}/create`, {
+      domains: 'google.com'
+    })
+      .then(res => {
+        if (res.data.status && isGuid(res.data.data.token)) {
+          const token = res.data.data.token
+
+          axios.post(`http://localhost:${conf.port}/${token}/set`, {
+            obj: { name: 'hazratgs' }
+          })
+            .catch(e => done())
+        }
+      })
+  })
+})
+
+describe('POST /create', () => {
+  it('Creating a token with a domain', done => {
+    axios.post(`http://localhost:${conf.port}/create`, {
+      domains: 'localhost'
+    })
+      .then(res => {
+        if (res.data.status && isGuid(res.data.data.token)) {
+          const token = res.data.data.token
+
+          axios.post(`http://localhost:${conf.port}/${token}/set`, {
+            obj: { name: 'hazratgs' }
+          })
+            .then(() => done())
+        }
+      })
+  })
+})
+

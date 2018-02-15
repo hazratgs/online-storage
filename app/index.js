@@ -18,9 +18,8 @@ const getStorage = async token => {
   return storage
 }
 
-const domainVerification = (origin, accessDomains) => {
-  if (!accessDomains) return false
-  if (accessDomains.length && !accessDomains.includes(origin)) {
+const domainVerification = (host, accessDomains) => {
+  if (accessDomains.length && !accessDomains.includes(host)) {
     throw new Error()
   }
 }
@@ -46,8 +45,8 @@ module.exports = app => {
         if (Array.isArray(domains)) tokenParam.domains = domains
         // Если передана строка, оборачиваем в массив
         if (typeof domains === 'string') tokenParam.domains = [domains]
-        // Если передано boolean true, сохраняем origin
-        if (typeof domains === 'boolean') tokenParam.domains = [req.get('origin')]
+        // Если передано boolean true, сохраняем host
+        if (typeof domains === 'boolean') tokenParam.domains = [req.hostname]
       }
 
       // Save to db
@@ -64,12 +63,12 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
-      const origin = req.get('origin')
+
       // Параметры токена
-      const tokenParam = tokenChecking(token)
+      const tokenParam = await tokenChecking(token)
 
       // Проверка доступа с домена, отправаивший запрос
-      domainVerification(tokenParam.domains, origin)
+      domainVerification(req.hostname, tokenParam.domains)
 
       // Data not sent
       if (Object.keys(req.body).length == 0) throw new Error()
@@ -96,12 +95,12 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      const origin = req.get('origin')
+      
       // Параметры токена
-      const tokenParam = tokenChecking(token)
+      const tokenParam = await tokenChecking(token)
 
       // Проверка доступа с домена, отправаивший запрос
-      domainVerification(tokenParam.domains, origin)
+      domainVerification(req.hostname, tokenParam.domains)
 
       // Data in storage
       const storage = await getStorage(token)
@@ -125,12 +124,12 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
-      const origin = req.get('origin')
+      
       // Параметры токена
-      const tokenParam = tokenChecking(token)
+      const tokenParam = await tokenChecking(token)
 
       // Проверка доступа с домена, отправаивший запрос
-      domainVerification(tokenParam.domains, origin)
+      domainVerification(req.hostname, tokenParam.domains)
 
       // Delete storage
       await StorageModel.Storage.remove({ token: token })
