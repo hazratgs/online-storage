@@ -147,7 +147,7 @@ module.exports = app => {
   app.get('/:token/get/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      tokenChecking(token)
+      await tokenChecking(token)
 
       // Data in storage
       const storage = await getStorage(token)
@@ -166,7 +166,7 @@ module.exports = app => {
   app.get('/:token/getAll', async (req, res) => {
     try {
       const { token } = req.params
-      tokenChecking(token)
+      await tokenChecking(token)
 
       // Data in storage
       const storage = await getStorage(token)
