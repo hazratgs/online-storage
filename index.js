@@ -22,5 +22,8 @@ app.use(bodyParser.urlencoded({
 const application = require('./app')
 application(app)
 
+// Backup Storage
+const backup = require('./app/backupStorage')
+
 // Start server
 app.listen(conf.port, () => console.log(`Express app run to port: ${conf.port}`))

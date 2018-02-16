@@ -29,7 +29,7 @@ module.exports = app => {
   app.post('/create', async (req, res) => {
     try {
       // Дополнительные данные защиты хранилища
-      const { domains } = req.body
+      const { domains, backup } = req.body
 
       // New unique uuid token
       const token = guid()
@@ -48,6 +48,9 @@ module.exports = app => {
         // Если передано boolean true, сохраняем host
         if (typeof domains === 'boolean') tokenParam.domains = [req.hostname]
       }
+
+      // Наличие резервного копирования
+      if (backup) tokenParam.backup = true
 
       // Save to db
       await new TokenModel.Token(tokenParam).save()
