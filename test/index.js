@@ -32,6 +32,15 @@ describe('POST /set', () => {
   })
 })
 
+describe('POST /set', () => {
+  it('Writing to an arbitrary token', done => {
+    axios.post(`http://localhost:${conf.port}/e0077360-1356-11e8-a45a-d98c7596bf5a/set`, {
+      counter: 1
+    })
+      .catch(() => done())
+  })
+})
+
 describe('GET /get', () => {
   it('Get counter value', done => {
     axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
