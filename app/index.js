@@ -1,5 +1,5 @@
 const db = require('../db')
-const guid = require('uuid/v1')
+const guid = require('uuid/v4')
 
 // Models
 const TokenModel = require('./models/token');
