@@ -185,7 +185,7 @@ module.exports = app => {
   })
 
   // Возвращает список доступных резервных копий хранилища
-  app.get('/:token/backup', async (req, res) => {
+  app.post('/:token/backup', async (req, res) => {
     try {
       const { token } = req.params
 
@@ -205,7 +205,7 @@ module.exports = app => {
     }
   })
 
-  app.get('/:token/backup/:date', async (req, res) => {
+  app.post('/:token/backup/:date', async (req, res) => {
     try {
       const { token, date } = req.params
 
