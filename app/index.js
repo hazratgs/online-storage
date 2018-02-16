@@ -4,6 +4,7 @@ const guid = require('uuid/v4')
 // Models
 const TokenModel = require('./models/token');
 const StorageModel = require('./models/storage')
+const BackupStorageModel = require('./models/backupStorage')
 
 // Checking the presence of the token in the Database
 const tokenChecking = async token => {
@@ -22,6 +23,11 @@ const domainVerification = (host, accessDomains) => {
   if (accessDomains.length && !accessDomains.includes(host)) {
     throw new Error()
   }
+}
+
+// Проверка на доступность резервного копирования
+const backupEnabled = token => {
+  if (!token.backup) throw new Error()
 }
 
 module.exports = app => {
@@ -98,7 +104,7 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      
+
       // Параметры токена
       const tokenParam = await tokenChecking(token)
 
@@ -127,7 +133,7 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
-      
+
       // Параметры токена
       const tokenParam = await tokenChecking(token)
 
@@ -173,6 +179,50 @@ module.exports = app => {
 
       // We return all data
       return res.send({ status: true, data: storage.storage })
+    } catch (e) {
+      res.status(500).send({ status: false, description: 'Error' })
+    }
+  })
+
+  // Возвращает список доступных резервных копий хранилища
+  app.get('/:token/backup', async (req, res) => {
+    try {
+      const { token } = req.params
+
+      // Параметры токена
+      const tokenParam = await tokenChecking(token)
+
+      // Доступн к резервному копированию
+      backupEnabled(tokenParam)
+
+      // Доступные резервные копии
+      const backups = await BackupStorageModel.BackupStorage.find({ token: token })
+
+      // Отпрвляем пользователю дату, которую можно использовать как идентификатор
+      return res.send({ status: true, data: backups.map(item => item.date) })
+    } catch (e) {
+      res.status(500).send({ status: false, description: 'Error' })
+    }
+  })
+
+  app.get('/:token/backup/:date', async (req, res) => {
+    try {
+      const { token, date } = req.params
+
+      // Параметры токена
+      const tokenParam = await tokenChecking(token)
+
+      // Доступн к резервному копированию
+      backupEnabled(tokenParam)
+
+      // Поиск резервной копии
+      const [backup] = await BackupStorageModel.BackupStorage.find({ token: token, date: date })
+
+      // Восстанавливаем хранилище из резервной копии
+      await StorageModel.Storage.update({ token: token }, { $set: { storage: backup.storage } })
+
+      // Отпрвляем пользователю дату, которую можно использовать как идентификатор
+      return res.send({ status: true, description: 'Успешно восстановлено' })
     } catch (e) {
       res.status(500).send({ status: false, description: 'Error' })
     }

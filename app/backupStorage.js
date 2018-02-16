@@ -17,7 +17,7 @@ cron.schedule('0 */1 * * *', async () => {
 
       // Формирование структуры бэкапа, дата использутся как идентификатор
       const backupStorage = {
-        token: token,
+        token: token.token,
         storage: storage.storage,
         date: Date.now()
       }
