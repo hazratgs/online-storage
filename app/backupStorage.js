@@ -8,7 +8,7 @@ const StorageModel = require('./models/storage')
 const BackupStorageModel = require('./models/backupStorage')
 
 // Резервные копии хранилища
-cron.schedule('0 */1 * * *', async () => {
+cron.schedule('0 */2 * * *', async () => {
   const tokens = await TokenModel.Token.find({ backup: true })
   tokens.map(async token => {
     try {
