@@ -216,7 +216,7 @@ module.exports = app => {
       backupEnabled(tokenParam)
 
       // Поиск резервной копии
-      const [backup] = await BackupStorageModel.BackupStorage.find({ token: token, date: date })
+      const backup = await BackupStorageModel.BackupStorage.findOne({ token: token, date: date })
 
       // Восстанавливаем хранилище из резервной копии
       await StorageModel.Storage.update({ token: token }, { $set: { storage: backup.storage } })
