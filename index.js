@@ -12,10 +12,10 @@ const cors = require('cors')
 
 app.use(cors())
 
-app.use(bodyParser.json({ limit: '5mb' }))
+app.use(bodyParser.json({ limit: '150kb' }))
 app.use(bodyParser.urlencoded({
   extended: true,
-  limit: '5mb'
+  limit: '150kb'
 }))
 
 // Routes
