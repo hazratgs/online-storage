@@ -19,8 +19,7 @@ app.use(bodyParser.urlencoded({
 }))
 
 // Routes
-const application = require('./app')
-application(app)
+const application = require('./app')(app)
 
 // Backup Storage
 const backup = require('./app/backupStorage')
