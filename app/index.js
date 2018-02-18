@@ -13,19 +13,21 @@ const tokenChecking = async token => {
   return findToken
 }
 
+// Get the storage
 const getStorage = async connect => {
   const storage = await StorageModel.Storage.findOne({ connect: connect })
   if (!storage) throw new Error()
   return storage
 }
 
+// Access to storage from a domain
 const domainVerification = (host, accessDomains) => {
   if (accessDomains.length && !accessDomains.includes(host)) {
     throw new Error()
   }
 }
 
-// Проверка на доступность резервного копирования
+// Checking for the availability of backups
 const backupEnabled = token => {
   if (!token.backup) throw new Error()
 }
@@ -34,34 +36,32 @@ module.exports = app => {
   // Creating a token
   app.post('/create', async (req, res) => {
     try {
-      // Дополнительные данные защиты хранилища
+      // Additional storage protection data
       const { domains, backup } = req.body
-
       // New unique uuid token
       const token = uuid.v4()
-
-      // Уникальный идентификатор для соединения токена с хранилищем
-      // а так же с помощью его можно обновить токен
+      // A unique identifier for connecting the token to the storage 
+      // as well as using it you can update the token
       const connect = uuid.v1()
 
-      // Данные по умолчанию
+      // Default
       const tokenParam = {
         token: token,
         connect: connect,
         refreshToken: connect
       }
 
-      // Cписок доменов для доступа к хранилищу
+      // The list of domains for accessing the repository
       if (domains) {
-        // Если передан массив, сохраняем как есть
+        // If an array is passed, store it as it is
         if (Array.isArray(domains)) tokenParam.domains = domains
-        // Если передана строка, оборачиваем в массив
+        // If a string is passed, wrap it in an array
         if (typeof domains === 'string') tokenParam.domains = [domains]
-        // Если передано boolean true, сохраняем host
+        // If passed boolean true, save the host
         if (typeof domains === 'boolean') tokenParam.domains = [req.hostname]
       }
 
-      // Наличие резервного копирования
+      // Availability of backup
       if (backup) tokenParam.backup = true
 
       // Save to db
@@ -74,23 +74,22 @@ module.exports = app => {
     }
   })
 
-  // Обновление токена
+  // Update token
   app.post('/:token/refresh', async (req, res) => {
     try {
       const { token } = req.params
       const { refreshToken } = req.body
-      if (!refreshToken) throw new Error()
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Проверяем подлиность
+      // We check authenticity
+      if (!refreshToken) throw new Error()
       if (tokenParam.refreshToken !== refreshToken) throw new Error()
 
-      // Новый токен
+      // New token
       const newToken = uuid.v4()
 
-      // Обновление токена
+      // Update token
       await TokenModel.Token.update({ refreshToken: refreshToken }, { $set: { token: newToken } })
 
       // Sending the token to the client
@@ -104,11 +103,10 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Проверка доступа с домена, отправаивший запрос
+      // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
 
       // Data not sent
@@ -136,11 +134,10 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Проверка доступа с домена, отправаивший запрос
+      // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
 
       // Data in storage
@@ -165,11 +162,10 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Проверка доступа с домена, отправаивший запрос
+      // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
 
       // Delete storage
@@ -185,7 +181,7 @@ module.exports = app => {
   app.get('/:token/get/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
       // Data in storage
@@ -205,7 +201,7 @@ module.exports = app => {
   app.get('/:token/getAll', async (req, res) => {
     try {
       const { token } = req.params
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
       // Data in storage
@@ -218,45 +214,44 @@ module.exports = app => {
     }
   })
 
-  // Возвращает список доступных резервных копий хранилища
+  // Returns a list of available storage backups
   app.post('/:token/backup', async (req, res) => {
     try {
       const { token } = req.params
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Доступн к резервному копированию
+      // Available for backup
       backupEnabled(tokenParam)
 
-      // Доступные резервные копии
+      // Available backups
       const backups = await BackupStorageModel.BackupStorage.find({ connect: tokenParam.connect })
 
-      // Отпрвляем пользователю дату, которую можно использовать как идентификатор
+      // Send the user a date that can be used as an identifier
       return res.send({ status: true, data: backups.map(item => item.date) })
     } catch (e) {
       res.status(500).send({ status: false, description: 'Error' })
     }
   })
 
+  // Restoring the storage from a backup
   app.post('/:token/backup/:date', async (req, res) => {
     try {
       const { token, date } = req.params
-
-      // Параметры токена
+      // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Доступн к резервному копированию
+      // Available for backup
       backupEnabled(tokenParam)
 
-      // Поиск резервной копии
+      // Find a backup
       const backup = await BackupStorageModel.BackupStorage.findOne({ connect: tokenParam.connect, date: date })
 
-      // Восстанавливаем хранилище из резервной копии
+      // Restoring the storage from a backup
       await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: backup.storage } })
 
-      // Отпрвляем пользователю дату, которую можно использовать как идентификатор
-      return res.send({ status: true, description: 'Успешно восстановлено' })
+      // Send the user a date that can be used as an identifier
+      return res.send({ status: true, description: 'Successfully restored' })
     } catch (e) {
       res.status(500).send({ status: false, description: 'Error' })
     }

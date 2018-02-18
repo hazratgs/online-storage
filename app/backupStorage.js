@@ -7,7 +7,7 @@ const TokenModel = require('./models/token');
 const StorageModel = require('./models/storage')
 const BackupStorageModel = require('./models/backupStorage')
 
-// Резервные копии хранилища
+// Backup storage
 cron.schedule('0 */2 * * *', async () => {
   const tokens = await TokenModel.Token.find({ backup: true })
   tokens.map(async token => {
@@ -15,7 +15,7 @@ cron.schedule('0 */2 * * *', async () => {
       const storage = await StorageModel.Storage.findOne({ connect: token.connect })
       if (!storage) throw new Error()
 
-      // Формирование структуры бэкапа, дата использутся как идентификатор
+      // Forming the backup structure, the date is used as an identifier
       const backupStorage = {
         connect: token.connect,
         storage: storage.storage,
@@ -25,19 +25,19 @@ cron.schedule('0 */2 * * *', async () => {
       // Save to db
       await new BackupStorageModel.BackupStorage(backupStorage).save()
     } catch (e) {
-      // Ошибка соединения или Хранилища нет
+      // Connection error or Vault not found
     }
   })
 })
 
-// Удаляем устаревшие копии хранилища
+// Delete obsolete copies of the repository
 cron.schedule('0 */6 * * *', async () => {
   try {
-    // Срок жизни бэкапа
+    // Backup time
     const lifetime = Date.now() - conf.backup.lifetime
-    // Удаление старых бэкапов
+    // Removing old backups
     await BackupStorageModel.BackupStorage.where('date').lt(lifetime).remove()
   } catch (e) {
-    // Ошибка соединения или данных нет в БД
+    // Connection error or no data in the database
   }
 })
