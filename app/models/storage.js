@@ -1,7 +1,7 @@
 const db = require('../../db');
 
 const StorageSchema = new db.mongoose.Schema({
-  token: { type: String, required: [true, "tokenRequired"] },
+  connect: { type: String, required: [true, "connectRequired"] },
   storage: { type: Object, default: {} }
 })
 

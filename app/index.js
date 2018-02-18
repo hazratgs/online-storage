@@ -1,5 +1,5 @@
 const db = require('../db')
-const guid = require('uuid/v4')
+const uuid = require('uuid')
 
 // Models
 const TokenModel = require('./models/token');
@@ -13,8 +13,8 @@ const tokenChecking = async token => {
   return findToken
 }
 
-const getStorage = async token => {
-  const storage = await StorageModel.Storage.findOne({ token: token })
+const getStorage = async connect => {
+  const storage = await StorageModel.Storage.findOne({ connect: connect })
   if (!storage) throw new Error()
   return storage
 }
@@ -38,11 +38,15 @@ module.exports = app => {
       const { domains, backup } = req.body
 
       // New unique uuid token
-      const token = guid()
+      const token = uuid.v4()
+
+      // Уникальный идентификатор для соединения токена с хранилищем
+      const connect = uuid.v1()
 
       // Данные по умолчанию
       const tokenParam = {
-        token: token
+        token: token,
+        connect: connect
       }
 
       // Cписок доменов для доступа к хранилищу
@@ -83,15 +87,15 @@ module.exports = app => {
       if (Object.keys(req.body).length == 0) throw new Error()
 
       // Data in storage
-      const storage = await StorageModel.Storage.findOne({ token: token })
+      const storage = await StorageModel.Storage.findOne({ connect: tokenParam.connect })
 
       if (storage) {
         // Merging new and old data (overwriting)
         const data = { ...storage.storage, ...req.body }
         // Updating data
-        await StorageModel.Storage.update({ token: token }, { $set: { storage: data } })
+        await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: data } })
       } else {
-        await new StorageModel.Storage({ token: token, storage: req.body }).save()
+        await new StorageModel.Storage({ connect: tokenParam.connect, storage: req.body }).save()
       }
 
       res.json({ status: true, message: 'Successfully added' })
@@ -112,7 +116,7 @@ module.exports = app => {
       domainVerification(req.hostname, tokenParam.domains)
 
       // Data in storage
-      const storage = await getStorage(token)
+      const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
       if (!storage.storage[key]) throw new Error()
@@ -121,7 +125,7 @@ module.exports = app => {
       delete data[key]
 
       // Updating the data
-      await StorageModel.Storage.update({ token: token }, { $set: { storage: data } })
+      await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: data } })
 
       res.json({ status: true, message: 'Successfully deleted' })
     } catch (e) {
@@ -141,7 +145,7 @@ module.exports = app => {
       domainVerification(req.hostname, tokenParam.domains)
 
       // Delete storage
-      await StorageModel.Storage.remove({ token: token })
+      await StorageModel.Storage.remove({ connect: tokenParam.connect })
 
       res.json({ status: true, message: 'Storage deleted' })
     } catch (e) {
@@ -153,10 +157,11 @@ module.exports = app => {
   app.get('/:token/get/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      await tokenChecking(token)
+      // Параметры токена
+      const tokenParam = await tokenChecking(token)
 
       // Data in storage
-      const storage = await getStorage(token)
+      const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
       if (!storage.storage[key]) throw new Error()
@@ -172,10 +177,11 @@ module.exports = app => {
   app.get('/:token/getAll', async (req, res) => {
     try {
       const { token } = req.params
-      await tokenChecking(token)
+      // Параметры токена
+      const tokenParam = await tokenChecking(token)
 
       // Data in storage
-      const storage = await getStorage(token)
+      const storage = await getStorage(tokenParam.connect)
 
       // We return all data
       return res.send({ status: true, data: storage.storage })
@@ -196,7 +202,7 @@ module.exports = app => {
       backupEnabled(tokenParam)
 
       // Доступные резервные копии
-      const backups = await BackupStorageModel.BackupStorage.find({ token: token })
+      const backups = await BackupStorageModel.BackupStorage.find({ connect: tokenParam.connect })
 
       // Отпрвляем пользователю дату, которую можно использовать как идентификатор
       return res.send({ status: true, data: backups.map(item => item.date) })
@@ -216,10 +222,10 @@ module.exports = app => {
       backupEnabled(tokenParam)
 
       // Поиск резервной копии
-      const backup = await BackupStorageModel.BackupStorage.findOne({ token: token, date: date })
+      const backup = await BackupStorageModel.BackupStorage.findOne({ connect: tokenParam.connect, date: date })
 
       // Восстанавливаем хранилище из резервной копии
-      await StorageModel.Storage.update({ token: token }, { $set: { storage: backup.storage } })
+      await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: backup.storage } })
 
       // Отпрвляем пользователю дату, которую можно использовать как идентификатор
       return res.send({ status: true, description: 'Успешно восстановлено' })

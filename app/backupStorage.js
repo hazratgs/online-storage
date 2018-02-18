@@ -12,12 +12,12 @@ cron.schedule('0 */2 * * *', async () => {
   const tokens = await TokenModel.Token.find({ backup: true })
   tokens.map(async token => {
     try {
-      const storage = await StorageModel.Storage.findOne({ token: token.token })
+      const storage = await StorageModel.Storage.findOne({ connect: token.connect })
       if (!storage) throw new Error()
 
       // Формирование структуры бэкапа, дата использутся как идентификатор
       const backupStorage = {
-        token: token.token,
+        connect: token.connect,
         storage: storage.storage,
         date: Date.now()
       }
