@@ -41,12 +41,14 @@ module.exports = app => {
       const token = uuid.v4()
 
       // Уникальный идентификатор для соединения токена с хранилищем
+      // а так же с помощью его можно обновить токен
       const connect = uuid.v1()
 
       // Данные по умолчанию
       const tokenParam = {
         token: token,
-        connect: connect
+        connect: connect,
+        refreshToken: connect
       }
 
       // Cписок доменов для доступа к хранилищу
@@ -67,6 +69,32 @@ module.exports = app => {
 
       // Sending the token to the client
       res.json({ status: true, data: tokenParam })
+    } catch (e) {
+      res.status(500).send({ status: false, description: e.message })
+    }
+  })
+
+  // Обновление токена
+  app.post('/:token/refresh', async (req, res) => {
+    try {
+      const { token } = req.params
+      const { refreshToken } = req.body
+      if (!refreshToken) throw new Error()
+
+      // Параметры токена
+      const tokenParam = await tokenChecking(token)
+
+      // Проверяем подлиность
+      if (tokenParam.refreshToken !== refreshToken) throw new Error()
+
+      // Новый токен
+      const newToken = uuid.v4()
+
+      // Обновление токена
+      await TokenModel.Token.update({ refreshToken: refreshToken }, { $set: { token: newToken } })
+
+      // Sending the token to the client
+      res.json({ status: true, data: newToken })
     } catch (e) {
       res.status(500).send({ status: false, description: e.message })
     }
