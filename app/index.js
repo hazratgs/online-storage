@@ -1,5 +1,6 @@
 const db = require('../db')
 const uuid = require('uuid')
+const MessageError = require('./messageError')
 
 // Models
 const TokenModel = require('./models/token');
@@ -9,27 +10,27 @@ const BackupStorageModel = require('./models/backupStorage')
 // Checking the presence of the token in the Database
 const tokenChecking = async token => {
   const findToken = await TokenModel.Token.findOne({ token: token })
-  if (!findToken) throw new Error()
+  if (!findToken) throw new MessageError('Token is not valid')
   return findToken
 }
 
 // Get the storage
 const getStorage = async connect => {
   const storage = await StorageModel.Storage.findOne({ connect: connect })
-  if (!storage) throw new Error()
+  if (!storage) throw new MessageError('No storage found')
   return storage
 }
 
 // Access to storage from a domain
 const domainVerification = (host, accessDomains) => {
   if (accessDomains.length && !accessDomains.includes(host)) {
-    throw new Error()
+    throw new MessageError('Access to the storage is forbidden')
   }
 }
 
 // Checking for the availability of backups
 const backupEnabled = token => {
-  if (!token.backup) throw new Error()
+  if (!token.backup) throw new MessageError('Access to the backup is prohibited')
 }
 
 module.exports = app => {
@@ -70,7 +71,7 @@ module.exports = app => {
       // Sending the token to the client
       res.json({ status: true, data: tokenParam })
     } catch (e) {
-      res.status(500).send({ status: false, description: e.message })
+      res.status(500).send({ status: false, description: 'Error: There was an error creating the token' })
     }
   })
 
@@ -83,8 +84,8 @@ module.exports = app => {
       const tokenParam = await tokenChecking(token)
 
       // We check authenticity
-      if (!refreshToken) throw new Error()
-      if (tokenParam.refreshToken !== refreshToken) throw new Error()
+      if (!refreshToken) throw new MessageError('Not passed RefreshToken')
+      if (tokenParam.refreshToken !== refreshToken) throw new MessageError('RefreshToken is not valid')
 
       // New token
       const newToken = uuid.v4()
@@ -95,7 +96,9 @@ module.exports = app => {
       // Sending the token to the client
       res.json({ status: true, data: newToken })
     } catch (e) {
-      res.status(500).send({ status: false, description: e.message })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -110,7 +113,7 @@ module.exports = app => {
       domainVerification(req.hostname, tokenParam.domains)
 
       // Data not sent
-      if (Object.keys(req.body).length == 0) throw new Error()
+      if (Object.keys(req.body).length == 0) throw new MessageError('No data was transferred for writing')
 
       // Data in storage
       const storage = await StorageModel.Storage.findOne({ connect: tokenParam.connect })
@@ -126,7 +129,9 @@ module.exports = app => {
 
       res.json({ status: true, message: 'Successfully added' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error adding data' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -144,7 +149,7 @@ module.exports = app => {
       const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
-      if (!storage.storage[key]) throw new Error()
+      if (!storage.storage[key]) throw new MessageError('There is no such entry in the storage')
 
       const data = { ...storage.storage }
       delete data[key]
@@ -154,7 +159,9 @@ module.exports = app => {
 
       res.json({ status: true, message: 'Successfully deleted' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Uninstall error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -173,7 +180,9 @@ module.exports = app => {
 
       res.json({ status: true, message: 'Storage deleted' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Uninstall error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -188,12 +197,14 @@ module.exports = app => {
       const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
-      if (!storage.storage[key]) throw new Error()
+      if (!storage.storage[key]) throw new MessageError('There is no such entry in the storage')
 
       // We return the data to the user
       res.send({ status: true, data: storage.storage[key] })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -210,7 +221,9 @@ module.exports = app => {
       // We return all data
       return res.send({ status: true, data: storage.storage })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -230,7 +243,9 @@ module.exports = app => {
       // Send the user a date that can be used as an identifier
       return res.send({ status: true, data: backups.map(item => item.date) })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
@@ -253,7 +268,9 @@ module.exports = app => {
       // Send the user a date that can be used as an identifier
       return res.send({ status: true, description: 'Successfully restored' })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error' })
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
     }
   })
 
