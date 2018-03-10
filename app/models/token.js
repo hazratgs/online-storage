@@ -5,7 +5,8 @@ const TokenSchema = new db.mongoose.Schema({
   connect: { type: String, required: [true, "connectRequired"] },
   refreshToken: { type: String, required: [true, "refreshTokenRequired"] },
   domains: { type: Array, default: [] },
-  backup: { type: Boolean, default: false }
+  backup: { type: Boolean, default: false },
+  password: { type: String },
 })
 
 exports.Token = db.connect.model("Token", TokenSchema)

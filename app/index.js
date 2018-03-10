@@ -1,6 +1,7 @@
 const db = require('../db')
 const uuid = require('uuid')
 const MessageError = require('./messageError')
+const md5 = require('md5')
 
 // Models
 const TokenModel = require('./models/token');
@@ -33,12 +34,20 @@ const backupEnabled = token => {
   if (!token.backup) throw new MessageError('Access to the backup is prohibited')
 }
 
+// Password access
+const accessWithPassword = (token, password) => {
+  // Password protection for writing is not installed
+  if (!token.password) return false
+  // If the password is not correct
+  if (token.password !== md5(password)) throw new MessageError('Incorrect password')
+}
+
 module.exports = app => {
   // Creating a token
   app.post('/create', async (req, res) => {
     try {
       // Additional storage protection data
-      const { domains, backup } = req.body
+      const { domains, backup, password } = req.body
       // New unique uuid token
       const token = uuid.v4()
       // A unique identifier for connecting the token to the storage 
@@ -64,6 +73,9 @@ module.exports = app => {
 
       // Availability of backup
       if (backup) tokenParam.backup = true
+
+      // If a password is sent, we save it
+      if (password) tokenParam.password = md5(password)
 
       // Save to db
       await new TokenModel.Token(tokenParam).save()
@@ -106,8 +118,12 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
+      const { password } = req.body
       // Token data
       const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
 
       // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
@@ -139,8 +155,12 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
+      const { password } = req.body
       // Token data
       const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
 
       // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
@@ -169,8 +189,12 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
+      const { password } = req.body
       // Token data
       const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
 
       // Checking access from the domain that sent the request
       domainVerification(req.hostname, tokenParam.domains)
@@ -231,8 +255,12 @@ module.exports = app => {
   app.post('/:token/backup', async (req, res) => {
     try {
       const { token } = req.params
+      const { password } = req.body
       // Token data
       const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
 
       // Available for backup
       backupEnabled(tokenParam)
@@ -253,8 +281,12 @@ module.exports = app => {
   app.post('/:token/backup/:date', async (req, res) => {
     try {
       const { token, date } = req.params
+      const { password } = req.body
       // Token data
       const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
 
       // Available for backup
       backupEnabled(tokenParam)
