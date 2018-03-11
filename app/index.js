@@ -118,7 +118,7 @@ module.exports = app => {
   app.post('/:token/set', async (req, res) => {
     try {
       const { token } = req.params
-      const { password } = req.body
+      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
@@ -155,7 +155,7 @@ module.exports = app => {
   app.delete('/:token/remove/:key', async (req, res) => {
     try {
       const { token, key } = req.params
-      const { password } = req.body
+      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
@@ -189,7 +189,7 @@ module.exports = app => {
   app.delete('/:token/delete', async (req, res) => {
     try {
       const { token } = req.params
-      const { password } = req.body
+      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
@@ -255,7 +255,7 @@ module.exports = app => {
   app.post('/:token/backup', async (req, res) => {
     try {
       const { token } = req.params
-      const { password } = req.body
+      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
@@ -281,7 +281,7 @@ module.exports = app => {
   app.post('/:token/backup/:date', async (req, res) => {
     try {
       const { token, date } = req.params
-      const { password } = req.body
+      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
