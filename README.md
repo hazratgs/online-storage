@@ -55,14 +55,14 @@ Ubuntu
 Как мы говорили выше, токен это ключ к доступу к конкретному хранилищу, а так же своего рода namespace.
 Получить новые токен можно с помощью запроса:
 
-    axios.post('https://kurtuba.ru/create')
+    axios.post('https://api.kurtuba.ru/create')
       .then(result => console.log('Новый токен: ', result.data.data))
       .catch(e => console.log('Ошибка при создании нового токена'))
 
 #### Добавление данных в хранилище, а так же обновление:
 После получения токена, мы можем записать, что-нибудь в наше хранилище, сделать это можно отправив POST запрос по адресу `/set`:
 
-    axios.post('https://kurtuba.ru/{наш токен}/set', {
+    axios.post('https://api.kurtuba.ru/{наш токен}/set', {
       counter: 1
     })
       .then(result => console.log('Успешно добавлено'))
@@ -76,7 +76,7 @@ Ubuntu
 #### Удаление элемента
 В REST API архитектуре принято использовать HTTP метод DELETE, именно с помощью его можно удалить определенное свойство из хранилища, например удалить `counter`:
 
-    axios.delete('https://kurtuba.ru/{наш токен}/remove/counter')
+    axios.delete('https://api.kurtuba.ru/{наш токен}/remove/counter')
       .then(result => console.log('Успешно удалено'))
       .cath(e => console.log('Ошибка удаления'))
 
@@ -84,20 +84,20 @@ Ubuntu
 #### Удаление храналища
 Для удаления хранилища используйте метод `/delete`
 
-    axios.delete('https://kurtuba.ru/{наш токен}/delete')
+    axios.delete('https://api.kurtuba.ru/{наш токен}/delete')
       .then(result => console.log('Хранилище удалено'))
       .cath(e => console.log('Ошибка удаления'))
 
 #### Получение данных
 Отправляется GET запрос с нужным ключём, значение которое нам нужно получить:
 
-    axios.get('https://kurtuba.ru/{наш токен}/get/counter')
+    axios.get('https://api.kurtuba.ru/{наш токен}/get/counter')
       .then(result => console.log('Наш счетчик: ', result.data.data))
       .cath(e => console.log('Ошибка получения данных'))
 
 Если вам нужно получить все данные, которые есть в хранилище, то необходимо выполнить вот такой запрос:
 
-    axios.get('https://kurtuba.ru/{наш токен}/getAll')
+    axios.get('https://api.kurtuba.ru/{наш токен}/getAll')
       .then(result => console.log('Хранилище: ', result.data.data))
       .cath(e => console.log('Ошибка получения данных'))
       
