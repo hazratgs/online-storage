@@ -1,6 +1,6 @@
 {
   "port": 3099,
-  "mongoose": "mongodb://localhost/kurtuba",
+  "mongoose": "mongodb://localhost/kurtubaStorage",
   "backup": {
     "lifetime": 86400000
   }
