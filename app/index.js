@@ -39,7 +39,7 @@ const accessWithPassword = (token, password) => {
   // Password protection for writing is not installed
   if (!token.password) return false
   // If the password is not correct
-  if (token.password !== md5(password)) throw new MessageError('Incorrect password')
+  if (!password || token.password !== md5(password)) throw new MessageError('Incorrect password')
 }
 
 module.exports = app => {
