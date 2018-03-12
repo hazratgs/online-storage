@@ -15,13 +15,13 @@ This is a cloud-key data store with a REST API interface, the database uses the 
  - Restoring the vault from a backup
 
 ## Getting Started
-Требование:
+Demand:
  - Node: v9.3.0+ 
  - MongoDB: v3.6.2+
 
 Clone this repository:
 
-    git@github.com:hazratgs/kurtuba.git
+    git clone git@github.com:hazratgs/kurtuba.git
 Go to the directory:
 
     cd kurtuba-storage
