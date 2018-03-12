@@ -52,10 +52,11 @@ That's all!
 *All examples are given using the axios JavaScript library*
 #### Creating a token
 All parameters (domains, backup, password) are optional:
+
 | параметр | описание |
 |--|--|
-| domains | list of domains that can receive data from the storage, use http header "Origin" as verification |
-| backup | the function of storing backup copies of the storage with the subsequent possibility to return to one of the points |
+| domains | list of domains that can receive data from the storage, use http header "Origin" as verification | 
+| backup | the function of storing backup copies of the storage with the subsequent possibility to return to one of the points | 
 | password | set a password if you need to protect the storage from being written by third-party users |
 
 ```js
