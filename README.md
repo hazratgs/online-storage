@@ -53,7 +53,7 @@ That's all!
 #### Creating a token
 All parameters (domains, backup, password) are optional:
 
-| параметр | описание |
+| param | description |
 |--|--|
 | domains | list of domains that can receive data from the storage, use http header "Origin" as verification | 
 | backup | the function of storing backup copies of the storage with the subsequent possibility to return to one of the points | 
