@@ -1,36 +1,34 @@
-# Kurtuba
+## kurtuba
+This is a cloud-key data store with a REST API interface, the database uses the NoSQL MongoDB database.
+***Get rid of all the complex configurations, installation scenarios and maintenance for storing your data!***
 
-> Kurtuba - это облачное ключ-значение хранилище данных с REST API интерфейсом, в качестве базы данных используется NoSQL база MongoDB.
-
-Избавьтесь от всех сложных конфигураций, сценариев установки и обслуживания для хранения ваших данных!
-
-## Возможности
-
- - **Создание токена:** Он необходим для доступа к конкретному хранилищу и представляет из себя обычный UUID идентификатор.
- - **Добавление данных**
- - **Обновление**
- - **Получение данных по ключу из хранилища**
- - **Удаление данных из хранилища**
+### Features
+ - Create token
+ - Refresh token
+ - Get value of a property from the storage
+ - Get all storage data
+ - Set key/value
+ - Remove element it storage
+ - Delete storage
+ - Get backup list
+ - Restoring the vault from a backup
 
 ## Getting Started
-
 Требование:
  - Node: v9.3.0+ 
  - MongoDB: v3.6.2+
 
-Сначала клонируйте этот репозиторий:
+Clone this repository:
 
     git@github.com:hazratgs/kurtuba.git
-Перейдите в каталог:
+Go to the directory:
 
-    cd kurtuba/
-
-Установите все зависимости:
+    cd kurtuba-storage
+Install all dependencies:
 
     npm install
-    
-Затем запустите MongoDB:
-###### Инструкцию по установке на вашу систему вы сможете найти на [официальном сайте MongoDB](https://docs.mongodb.com/manual/tutorial/#installation)
+Then start MongoDB:
+###### Installation instructions for your system can be found on the [the official website of MongoDB](https://docs.mongodb.com/manual/tutorial/#installation)
 Mac OS
 
     mongod
@@ -39,79 +37,184 @@ Ubuntu
 
     sudo service mongod start
 
-После чего вы можете запустить Kurtuba на вашей рабочей машине командой:
+After that you can run the repository on your working machine with the command:
 
     node index.js
 
-Для фоновой работы хранилища, вам необходимо установить npm пакет [pm2](https://www.npmjs.com/package/pm2), подробнее о нем вы сможете прочитать в соответствующем репозитории, если он у вас установлен, то выполните команду:
+For the background work of the repository, you need to install the npm package [pm2](https://www.npmjs.com/package/pm2), you can read more about it in the corresponding repository, if you have it installed, run the command:
 
     npm run start
 
-Вот и все!
+That's all!
 
 ## API
+*All examples are given using the axios JavaScript library*
+#### Creating a token
+All parameters (domains, backup, password) are optional:
+| параметр | описание |
+|--|--|
+| domains | list of domains that can receive data from the storage, use http header "Origin" as verification |
+| backup | the function of storing backup copies of the storage with the subsequent possibility to return to one of the points |
+| password | set a password if you need to protect the storage from being written by third-party users |
 
-#### Создание токена:
-Как мы говорили выше, токен это ключ к доступу к конкретному хранилищу, а так же своего рода namespace.
-Получить новые токен можно с помощью запроса:
+```js
+axios.post('https://api.kurtuba.ru/create', {
+  domains: ['example.com', 'google.com'],
+  backup: true,
+  password: 'qwerty'
+})
+```
 
-    axios.post('https://api.kurtuba.ru/create')
-      .then(result => console.log('Новый токен: ', result.data.data))
-      .catch(e => console.log('Ошибка при создании нового токена'))
+ <details>
+  <summary>View Response</summary>
 
-#### Добавление данных в хранилище, а так же обновление:
-После получения токена, мы можем записать, что-нибудь в наше хранилище, сделать это можно отправив POST запрос по адресу `/set`:
+```js 		 
+{
+  "status":  true,
+  "data":{
+    "token": "002cac23-aa8b-4803-a94f-3888020fa0df",
+    "refreshToken": "5bf365e0-1fc0-11e8-85d2-3f7a9c4f742e"
+  }
+}
+```
+</details>
 
-    axios.post('https://api.kurtuba.ru/{наш токен}/set', {
-      counter: 1
-    })
-      .then(result => console.log('Успешно добавлено'))
-      .cath(e => console.log('Ошибка добавления'))
+#### Writing data to storage
+To write data to the storage, you need to transfer the data object:
+```js
+axios.post('https://api.kurtuba.ru/{token}/set', {
+  name: 'hazratgs',
+  age: 25,
+  city: 'Derbent'
+  skills: ['javascript', 'react+redux', 'nodejs', 'mongodb']
+})
+```
 
-> В этом аспекте я отойду от принятого стандарта CRUD, мне удобнее
-> записывать и обновлять данные одним методом, аналогично работе с
-> localStorage, если вам такой подход не по душе, вы можете форкнуть
-> проект
+ <details>
+  <summary>View Response</summary>
 
-#### Удаление элемента
-В REST API архитектуре принято использовать HTTP метод DELETE, именно с помощью его можно удалить определенное свойство из хранилища, например удалить `counter`:
+```js 		 
+{
+  "status":  true,
+  "message": "Successfully added"
+}
+```
+</details>
 
-    axios.delete('https://api.kurtuba.ru/{наш токен}/remove/counter')
-      .then(result => console.log('Успешно удалено'))
-      .cath(e => console.log('Ошибка удаления'))
+#### Get property
+```js
+axios.get('https://api.kurtuba.ru/{token}/get/name')
+```
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true,
+  "data": "hazratgs"
+}
+```
+</details>
+
+#### Get all storage
+```js
+axios.get('https://api.kurtuba.ru/{token}/getAll')
+```
+
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true,
+  "data": {
+    name: 'hazratgs',
+    age: 25,
+    city: 'Derbent'
+    skills: ['javascript', 'react+redux', 'nodejs', 'mongodb']
+  }
+}
+```
+</details>
+
+#### Remove property
+```js
+axios.delete('https://api.kurtuba.ru/{token}/remove/city')
+```
+
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true,
+  "message": "Successfully deleted"
+}
+```
+</details>
 
 
-#### Удаление храналища
-Для удаления хранилища используйте метод `/delete`
+#### Delete storage
+```js
+axios.delete('https://api.kurtuba.ru/{token}/delete')
+```
 
-    axios.delete('https://api.kurtuba.ru/{наш токен}/delete')
-      .then(result => console.log('Хранилище удалено'))
-      .cath(e => console.log('Ошибка удаления'))
+ <details>
+  <summary>View Response</summary>
 
-#### Получение данных
-Отправляется GET запрос с нужным ключём, значение которое нам нужно получить:
+```js 		 
+{
+  "status":  true,
+  "message": "Storage deleted"
+}
+```
+</details>
 
-    axios.get('https://api.kurtuba.ru/{наш токен}/get/counter')
-      .then(result => console.log('Наш счетчик: ', result.data.data))
-      .cath(e => console.log('Ошибка получения данных'))
 
-Если вам нужно получить все данные, которые есть в хранилище, то необходимо выполнить вот такой запрос:
+#### Get backup list storage
+If you passed a parameter `backup` when creating a token, then your repository will have backup copies, which are created every 2 hours and stored during the day.
+In order to get a list of active copies of the repository, send the request:
+```js
+axios.post('https://api.kurtuba.ru/{token}/backup')
+```
 
-    axios.get('https://api.kurtuba.ru/{наш токен}/getAll')
-      .then(result => console.log('Хранилище: ', result.data.data))
-      .cath(e => console.log('Ошибка получения данных'))
-      
-## Тесты
-Тесты написаны с помощью Chai & Mocha и для запуска их используйте npm скрипт:
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true,
+  "data": [
+    'Sun Mar 04 2018 19:39:42 GMT+0300 (MSK)', 
+    'Sun Mar 04 2018 20:39:42 GMT+0300 (MSK)'
+  ]
+}
+```
+</details>
+
+#### Restoring the vault from a backup
+To return the store to a specific checkpoint, pass the date of the checkpoint:
+```js
+axios.post('https://api.kurtuba.ru/{token}/backup/Sun Mar 04 2018 19:39:42 GMT+0300 (MSK)')
+```
+
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true,
+  "message": "Successfully restored"
+}
+```
+</details>
+
+
+
+## Test
+Tests are written using Chai & Mocha and to run them use the npm script:
 
     npm run test
-
-## Поддержка
-Мы арендуем сервер малой мощности, пока этого достаточно, но для увеличения быстродействия необходимы средства,  вы можете поддержать проект одним из следующих способов:
-
-**Ethereum: 0xcf70112ab045086efaf6bbe0338fc7fa5c2bdef8**
-
-**Bitcoin: 3BeNEg3QKE7RbTcujV6VMSMjukwcnMeFfD**
 
 ## License
 Code released under the MIT License.
