@@ -50,6 +50,8 @@ For the background work of the repository, you need to install the npm package [
 
 That's all!
 
+For convenience in working with the repository, you can use the kurtub-client library [kurtuba-client](https://www.npmjs.com/package/kurtuba-client)
+
 ## API
 *All examples are given using the axios JavaScript library*
 #### Creating a token
