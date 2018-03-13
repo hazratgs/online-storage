@@ -1,8 +1,7 @@
 ## kurtuba
-This is a cloud-key data store with a REST API interface, the database uses the NoSQL MongoDB database.
-
 [![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/kurtuba-client)
 
+This is a cloud-key data store with a REST API interface, the database uses the NoSQL MongoDB database.
 
 **Get rid of all the complex configurations, installation scenarios and maintenance for storing your data!**
 
