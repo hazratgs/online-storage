@@ -81,7 +81,14 @@ module.exports = app => {
       await new TokenModel.Token(tokenParam).save()
 
       // Sending the token to the client
-      res.json({ status: true, data: tokenParam })
+      res.json({
+        status: true,
+        data: {
+          token,
+          domains: tokenParam.domains,
+          backup: tokenParam.backup
+        }
+      })
     } catch (e) {
       res.status(500).send({ status: false, description: 'Error: There was an error creating the token' })
     }
