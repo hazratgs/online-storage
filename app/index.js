@@ -85,6 +85,7 @@ module.exports = app => {
         status: true,
         data: {
           token,
+          refreshToken: connect,
           domains: tokenParam.domains,
           backup: tokenParam.backup
         }
@@ -122,7 +123,7 @@ module.exports = app => {
   })
 
   // Adding Data
-  app.post('/:token/set', async (req, res) => {
+  app.post('/:token', async (req, res) => {
     try {
       const { token } = req.params
       const { password } = req.headers
@@ -158,8 +159,33 @@ module.exports = app => {
     }
   })
 
+  // Clearing the data store
+  app.delete('/:token', async (req, res) => {
+    try {
+      const { token } = req.params
+      const { password } = req.headers
+      // Token data
+      const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
+
+      // Checking access from the domain that sent the request
+      domainVerification(req.hostname, tokenParam.domains)
+
+      // Delete storage
+      await StorageModel.Storage.remove({ connect: tokenParam.connect })
+
+      res.json({ status: true, message: 'Storage deleted' })
+    } catch (e) {
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
+    }
+  })
+
   // Deletion of the property
-  app.delete('/:token/remove/:key', async (req, res) => {
+  app.delete('/:token/:key', async (req, res) => {
     try {
       const { token, key } = req.params
       const { password } = req.headers
@@ -192,24 +218,18 @@ module.exports = app => {
     }
   })
 
-  // Clearing the data store
-  app.delete('/:token/delete', async (req, res) => {
+  // We return all data
+  app.get('/:token', async (req, res) => {
     try {
       const { token } = req.params
-      const { password } = req.headers
       // Token data
       const tokenParam = await tokenChecking(token)
 
-      // Verify Password
-      accessWithPassword(tokenParam, password)
+      // Data in storage
+      const storage = await getStorage(tokenParam.connect)
 
-      // Checking access from the domain that sent the request
-      domainVerification(req.hostname, tokenParam.domains)
-
-      // Delete storage
-      await StorageModel.Storage.remove({ connect: tokenParam.connect })
-
-      res.json({ status: true, message: 'Storage deleted' })
+      // We return all data
+      return res.send({ status: true, data: storage.storage })
     } catch (e) {
       let message = 'Unexpected error'
       if (e instanceof MessageError) message = e.message
@@ -218,7 +238,7 @@ module.exports = app => {
   })
 
   // Receiving data
-  app.get('/:token/get/:key', async (req, res) => {
+  app.get('/:token/:key', async (req, res) => {
     try {
       const { token, key } = req.params
       // Token data
@@ -232,25 +252,6 @@ module.exports = app => {
 
       // We return the data to the user
       res.send({ status: true, data: storage.storage[key] })
-    } catch (e) {
-      let message = 'Unexpected error'
-      if (e instanceof MessageError) message = e.message
-      res.status(500).send({ status: false, description: message })
-    }
-  })
-
-  // We return all data
-  app.get('/:token/getAll', async (req, res) => {
-    try {
-      const { token } = req.params
-      // Token data
-      const tokenParam = await tokenChecking(token)
-
-      // Data in storage
-      const storage = await getStorage(tokenParam.connect)
-
-      // We return all data
-      return res.send({ status: true, data: storage.storage })
     } catch (e) {
       let message = 'Unexpected error'
       if (e instanceof MessageError) message = e.message
