@@ -1,143 +1,56 @@
-require('../index')
-const chai = require('chai')
+const app = require('../index')
+const request = require('supertest')
+const expect = require('chai').expect
+
 const conf = require('../conf.json')
-const axios = require('axios')
 const isGuid = require('is-guid').isGuid
 
-// Models
-const TokenModel = require('../app//models/token');
-const StorageModel = require('../app/models/storage')
-
-// New token for test
-let token = null
-
 describe('POST /create', () => {
-  it('Create a new token', done => {
-    axios.post(`http://localhost:${conf.port}/create`)
-      .then(res => {
-        if (res.data.status && isGuid(res.data.data.token)) {
-          token = res.data.data.token
-          done()
-        }
+  it('create a new token', done => {
+    request(app)
+      .post('/create')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (!isGuid(res.body.data.token)) throw new Error('is token not guid')
+        done()
+      })
+  })
+
+  it('create a token with domain access', done => {
+    request(app)
+      .post('/create')
+      .send({ domains: 'localhost' })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        expect(res.body.data.domains).to.include('localhost')
+        done()
+      })
+  })
+
+  it('create a token with a backup', done => {
+    request(app)
+      .post('/create')
+      .send({ backup: true })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        expect(res.body.data.backup).to.be.true
+        done()
+      })
+  })
+
+  it('create a token with a backup and with domain access', done => {
+    request(app)
+      .post('/create')
+      .send({ backup: true, domains: 'localhost' })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        expect(res.body.data.backup).to.be.true
+        expect(res.body.data.domains).to.include('localhost')
+        done()
       })
   })
 })
-
-describe('POST /set', () => {
-  it('Write a new value', done => {
-    axios.post(`http://localhost:${conf.port}/${token}/set`, {
-      counter: 1
-    })
-      .then(res => done())
-  })
-})
-
-describe('POST /set', () => {
-  it('Writing to an arbitrary token', done => {
-    axios.post(`http://localhost:${conf.port}/e0077360-1356-11e8-a45a-d98c7596bf5a/set`, {
-      counter: 1
-    })
-      .catch(() => done())
-  })
-})
-
-describe('GET /get', () => {
-  it('Get counter value', done => {
-    axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
-      .then(res => {
-        if (res.data.status && res.data.data) {
-          done()
-        }
-      })
-  })
-})
-
-describe('GET /getAll', () => {
-  it('Get counter value', done => {
-    axios.get(`http://localhost:${conf.port}/${token}/getAll`)
-      .then(res => {
-        if (res.data.status && res.data.data) {
-          done()
-        }
-      })
-  })
-})
-
-describe('UPDATE /update', () => {
-  it('Update counter', done => {
-    axios.post(`http://localhost:${conf.port}/${token}/set`, {
-      counter: 2
-    })
-      .then(res => {
-        if (res.data.status) {
-          axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
-            .then(res => {
-              if (res.data.status && res.data.data === 2) {
-                done()
-              }
-            })
-        }
-      })
-  })
-})
-
-describe('DELETE /remove', () => {
-  it('Remove counter', done => {
-    axios.delete(`http://localhost:${conf.port}/${token}/remove/counter`)
-      .then(res => {
-        if (res.data.status) {
-          axios.get(`http://localhost:${conf.port}/${token}/get/counter`)
-            .catch(e => done())
-        }
-      })
-  })
-})
-
-describe('DELETE /delete', () => {
-  it('Remove counter', done => {
-    axios.delete(`http://localhost:${conf.port}/${token}/delete`)
-      .then(res => {
-        if (res.data.status) {
-          axios.get(`http://localhost:${conf.port}/${token}/getAll`)
-            .catch(e => done())
-        }
-      })
-  })
-})
-
-describe('POST /create', () => {
-  it('Checking access from another domain to the storage', done => {
-    axios.post(`http://localhost:${conf.port}/create`, {
-      domains: 'google.com'
-    })
-      .then(res => {
-        if (res.data.status && isGuid(res.data.data.token)) {
-          const token = res.data.data.token
-
-          axios.post(`http://localhost:${conf.port}/${token}/set`, {
-            obj: { name: 'hazratgs' }
-          })
-            .catch(e => done())
-        }
-      })
-  })
-})
-
-describe('POST /create', () => {
-  it('Creating a token with a domain', done => {
-    axios.post(`http://localhost:${conf.port}/create`, {
-      domains: 'localhost'
-    })
-      .then(res => {
-        if (res.data.status && isGuid(res.data.data.token)) {
-          const token = res.data.data.token
-
-          axios.post(`http://localhost:${conf.port}/${token}/set`, {
-            obj: { name: 'hazratgs' }
-          })
-            .then(() => done())
-        }
-      })
-  })
-})
-

@@ -26,3 +26,6 @@ const backup = require('./app/backupStorage')
 
 // Start server
 app.listen(conf.port, () => console.log(`Express app run to port: ${conf.port}`))
+
+// Return app for test
+if (process.env.TEST) module.exports = app
