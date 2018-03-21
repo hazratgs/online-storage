@@ -7,8 +7,6 @@ const db = mongoose.connection
 
 db.on('error', err => console.log('connection db error'))
 
-db.once('open', () => console.log('connected db'))
-
 // MongoDB
 exports.mongoose = mongoose
 
