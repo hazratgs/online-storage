@@ -4,10 +4,12 @@ const expect = require('chai').expect
 
 const conf = require('../conf.json')
 const isGuid = require('is-guid').isGuid
+const password = 'qwerty'
+const user = { name: 'hazratgs', age: 25, city: 'Derbent' }
 
 let token = null
 let refreshToken = null
-const user = { name: 'hazratgs', age: 25, city: 'Derbent' }
+let tokenPassword = null
 
 describe('POST /create', () => {
   it('create a new token', done => {
@@ -18,6 +20,7 @@ describe('POST /create', () => {
       .end((err, res) => {
         if (err) throw new Error(err.message)
         if (!isGuid(res.body.data.token)) throw new Error('is token not guid')
+        expect(res.body.status).to.be.true
         done()
       })
   })
@@ -30,6 +33,7 @@ describe('POST /create', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data.domains).to.include('127.0.0.1')
         token = res.body.data.token
         refreshToken = res.body.data.refreshToken
@@ -45,6 +49,7 @@ describe('POST /create', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data.backup).to.be.true
         done()
       })
@@ -58,8 +63,24 @@ describe('POST /create', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data.backup).to.be.true
         expect(res.body.data.domains).to.include('127.0.0.1')
+        done()
+      })
+  })
+
+  it('create a token with a password', done => {
+    request(app)
+      .post('/create')
+      .send({ password })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        expect(res.body.data.password).to.be.true
+        tokenPassword = res.body.data.token
         done()
       })
   })
@@ -69,6 +90,20 @@ describe('POST /', () => {
   it('write a storage with domain access', done => {
     request(app)
       .post(`/${token}`)
+      .send(user)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        done()
+      })
+  })
+
+  it('write a storage with password', done => {
+    request(app)
+      .post(`/${tokenPassword}`)
+      .set('password', password)
       .send(user)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -88,6 +123,7 @@ describe('GET /', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data).to.equal(user.name)
         done()
       })
@@ -100,6 +136,7 @@ describe('GET /', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data).to.deep.equal(user)
         done()
       })
@@ -156,6 +193,7 @@ describe('Domain Access', () => {
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
         expect(res.body.data.domains).to.include('google.com')
         token = res.body.data.token
         done()
