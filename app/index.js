@@ -1,7 +1,7 @@
 const db = require('../db')
 const uuid = require('uuid')
 const MessageError = require('./messageError')
-const md5 = require('md5')
+const passwordHash = require('password-hash')
 
 // Models
 const TokenModel = require('./models/token');
@@ -39,7 +39,7 @@ const accessWithPassword = (token, password) => {
   // Password protection for writing is not installed
   if (!token.password) return false
   // If the password is not correct
-  if (!password || token.password !== md5(password)) throw new MessageError('Incorrect password')
+  if (!password || passwordHash.verify(password, token.password)) throw new MessageError('Incorrect password')
 }
 
 module.exports = app => {
@@ -75,7 +75,7 @@ module.exports = app => {
       if (backup) tokenParam.backup = true
 
       // If a password is sent, we save it
-      if (password) tokenParam.password = md5(password)
+      if (password) tokenParam.password = passwordHash.generate(password)
 
       // Save to db
       await new TokenModel.Token(tokenParam).save()
