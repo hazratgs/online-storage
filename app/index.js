@@ -36,10 +36,11 @@ const backupEnabled = token => {
 
 // Password access
 const accessWithPassword = (token, password) => {
+  console.log('accessWithPassword', passwordHash.verify(password, token.password))
   // Password protection for writing is not installed
   if (!token.password) return false
   // If the password is not correct
-  if (!password || passwordHash.verify(password, token.password)) throw new MessageError('Incorrect password')
+  if (!password || !passwordHash.verify(password, token.password)) throw new MessageError('Incorrect password')
 }
 
 module.exports = app => {
@@ -87,7 +88,8 @@ module.exports = app => {
           token,
           refreshToken: connect,
           domains: tokenParam.domains,
-          backup: tokenParam.backup
+          backup: tokenParam.backup,
+          password: !!tokenParam.password
         }
       })
     } catch (e) {
@@ -127,6 +129,7 @@ module.exports = app => {
     try {
       const { token } = req.params
       const { password } = req.headers
+      console.log('password', password)
       // Token data
       const tokenParam = await tokenChecking(token)
 
