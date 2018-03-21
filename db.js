@@ -1,14 +1,13 @@
 const mongoose = require('mongoose')
 const conf = require('./conf.json')
-
 mongoose.Promise = global.Promise
 
-mongoose.connect(conf.mongoose)
+mongoose.connect(process.env.TEST ? conf.mongooseTest : conf.mongoose)
 const db = mongoose.connection
 
-db.on('error', err => console.log(`connection error: ${err.message}`))
+db.on('error', err => console.log('connection db error'))
 
-db.once('open', () => ({}))
+db.once('open', () => console.log('connected db'))
 
 // MongoDB
 exports.mongoose = mongoose
