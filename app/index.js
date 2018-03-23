@@ -36,7 +36,6 @@ const backupEnabled = token => {
 
 // Password access
 const accessWithPassword = (token, password) => {
-  console.log('accessWithPassword', passwordHash.verify(password, token.password))
   // Password protection for writing is not installed
   if (!token.password) return false
   // If the password is not correct
@@ -129,7 +128,6 @@ module.exports = app => {
     try {
       const { token } = req.params
       const { password } = req.headers
-      console.log('password', password)
       // Token data
       const tokenParam = await tokenChecking(token)
 
