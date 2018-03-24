@@ -1,9 +1,9 @@
-const db = require('../../db');
+const db = require('../../db')
 
 const BackupStorageSchema = new db.mongoose.Schema({
-  connect: { type: String, required: [true, "connectRequired"] },
+  connect: { type: String, required: [true, 'connectRequired'] },
   storage: { type: Object, default: {} },
   date: { type: Date, default: Date.now }
 })
 
-exports.BackupStorage = db.connect.model("BackupStorage", BackupStorageSchema)
+exports.BackupStorage = db.connect.model('BackupStorage', BackupStorageSchema)

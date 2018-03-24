@@ -1,6 +1,6 @@
-function MessageError(message) {
-    this.name = 'MessageError'
-    this.message = `Error: ${message}`
+function MessageError (message) {
+  this.name = 'MessageError'
+  this.message = `Error: ${message}`
 }
 
 MessageError.prototype = Object.create(Error.prototype)

@@ -4,7 +4,7 @@ const MessageError = require('./messageError')
 const passwordHash = require('password-hash')
 
 // Models
-const TokenModel = require('./models/token');
+const TokenModel = require('./models/token')
 const StorageModel = require('./models/storage')
 const BackupStorageModel = require('./models/backupStorage')
 
@@ -31,7 +31,9 @@ const domainVerification = (host, accessDomains) => {
 
 // Checking for the availability of backups
 const backupEnabled = token => {
-  if (!token.backup) throw new MessageError('Access to the backup is prohibited')
+  if (!token.backup) {
+    throw new MessageError('Access to the backup is prohibited')
+  }
 }
 
 // Password access
@@ -39,7 +41,9 @@ const accessWithPassword = (token, password) => {
   // Password protection for writing is not installed
   if (!token.password) return false
   // If the password is not correct
-  if (!password || !passwordHash.verify(password, token.password)) throw new MessageError('Incorrect password')
+  if (!password || !passwordHash.verify(password, token.password)) {
+    throw new MessageError('Incorrect password')
+  }
 }
 
 module.exports = app => {
@@ -50,7 +54,7 @@ module.exports = app => {
       const { domains, backup, password } = req.body
       // New unique uuid token
       const token = uuid.v4()
-      // A unique identifier for connecting the token to the storage 
+      // A unique identifier for connecting the token to the storage
       // as well as using it you can update the token
       const connect = uuid.v1()
 
@@ -92,7 +96,10 @@ module.exports = app => {
         }
       })
     } catch (e) {
-      res.status(500).send({ status: false, description: 'Error: There was an error creating the token' })
+      res.status(500).send({
+        status: false,
+        description: 'Error: There was an error creating the token'
+      })
     }
   })
 
@@ -106,13 +113,18 @@ module.exports = app => {
 
       // We check authenticity
       if (!refreshToken) throw new MessageError('Not passed RefreshToken')
-      if (tokenParam.refreshToken !== refreshToken) throw new MessageError('RefreshToken is not valid')
+      if (tokenParam.refreshToken !== refreshToken) {
+        throw new MessageError('RefreshToken is not valid')
+      }
 
       // New token
       const newToken = uuid.v4()
 
       // Update token
-      await TokenModel.Token.update({ refreshToken: refreshToken }, { $set: { token: newToken } })
+      await TokenModel.Token.update(
+        { refreshToken: refreshToken },
+        { $set: { token: newToken } }
+      )
 
       // Sending the token to the client
       res.json({ status: true, data: newToken })
@@ -138,18 +150,28 @@ module.exports = app => {
       domainVerification(req.hostname, tokenParam.domains)
 
       // Data not sent
-      if (Object.keys(req.body).length == 0) throw new MessageError('No data was transferred for writing')
+      if (Object.keys(req.body).length == 0) {
+        throw new MessageError('No data was transferred for writing')
+      }
 
       // Data in storage
-      const storage = await StorageModel.Storage.findOne({ connect: tokenParam.connect })
+      const storage = await StorageModel.Storage.findOne({
+        connect: tokenParam.connect
+      })
 
       if (storage) {
         // Merging new and old data (overwriting)
         const data = { ...storage.storage, ...req.body }
         // Updating data
-        await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: data } })
+        await StorageModel.Storage.update(
+          { connect: tokenParam.connect },
+          { $set: { storage: data } }
+        )
       } else {
-        await new StorageModel.Storage({ connect: tokenParam.connect, storage: req.body }).save()
+        await new StorageModel.Storage({
+          connect: tokenParam.connect,
+          storage: req.body
+        }).save()
       }
 
       res.json({ status: true, message: 'Successfully added' })
@@ -203,13 +225,18 @@ module.exports = app => {
       const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
-      if (!storage.storage[key]) throw new MessageError('There is no such entry in the storage')
+      if (!storage.storage[key]) {
+        throw new MessageError('There is no such entry in the storage')
+      }
 
       const data = { ...storage.storage }
       delete data[key]
 
       // Updating the data
-      await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: data } })
+      await StorageModel.Storage.update(
+        { connect: tokenParam.connect },
+        { $set: { storage: data } }
+      )
 
       res.json({ status: true, message: 'Successfully deleted' })
     } catch (e) {
@@ -249,7 +276,9 @@ module.exports = app => {
       const storage = await getStorage(tokenParam.connect)
 
       // If there is no key in storage
-      if (!storage.storage[key]) throw new MessageError('There is no such entry in the storage')
+      if (!storage.storage[key]) {
+        throw new MessageError('There is no such entry in the storage')
+      }
 
       // We return the data to the user
       res.send({ status: true, data: storage.storage[key] })
@@ -275,7 +304,9 @@ module.exports = app => {
       backupEnabled(tokenParam)
 
       // Available backups
-      const backups = await BackupStorageModel.BackupStorage.find({ connect: tokenParam.connect })
+      const backups = await BackupStorageModel.BackupStorage.find({
+        connect: tokenParam.connect
+      })
 
       // Send the user a date that can be used as an identifier
       return res.send({ status: true, data: backups.map(item => item.date) })
@@ -301,10 +332,16 @@ module.exports = app => {
       backupEnabled(tokenParam)
 
       // Find a backup
-      const backup = await BackupStorageModel.BackupStorage.findOne({ connect: tokenParam.connect, date: date })
+      const backup = await BackupStorageModel.BackupStorage.findOne({
+        connect: tokenParam.connect,
+        date: date
+      })
 
       // Restoring the storage from a backup
-      await StorageModel.Storage.update({ connect: tokenParam.connect }, { $set: { storage: backup.storage } })
+      await StorageModel.Storage.update(
+        { connect: tokenParam.connect },
+        { $set: { storage: backup.storage } }
+      )
 
       // Send the user a date that can be used as an identifier
       return res.send({ status: true, description: 'Successfully restored' })
@@ -317,11 +354,15 @@ module.exports = app => {
 
   // If there are no handlers, 404
   app.use((req, res, next) => {
-    res.status(404).send({ status: false, description: "Not Found: method not found" })
+    res
+      .status(404)
+      .send({ status: false, description: 'Not Found: method not found' })
   })
 
   // There was an error
   app.use((err, req, res, next) => {
-    res.status(err.status || 500).send({ status: false, description: 'Not Found: method not found' })
+    res
+      .status(err.status || 500)
+      .send({ status: false, description: 'Not Found: method not found' })
   })
 }
