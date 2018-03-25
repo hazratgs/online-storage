@@ -192,7 +192,7 @@ describe('Domain Access', () => {
 })
 
 describe('POST /:token/backup', () => {
-  it('создаем резервную копию', done => {
+  it('create a backup copy', done => {
     request(app)
       .post(`/${token.token}/backup`)
       .expect('Content-Type', /json/)
@@ -204,7 +204,7 @@ describe('POST /:token/backup', () => {
       })
   })
 
-  it('получаем список резервных копий', done => {
+  it('get a list of backups', done => {
     request(app)
       .get(`/${token.token}/backup/list`)
       .expect('Content-Type', /json/)

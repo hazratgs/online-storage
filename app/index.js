@@ -290,7 +290,7 @@ module.exports = app => {
     }
   })
 
-  // Создание резервной копии
+  // Creating a backup
   app.post('/:token/backup', async (req, res) => {
     try {
       const { token } = req.params
@@ -312,16 +312,16 @@ module.exports = app => {
         connect: tokenParam.connect
       })
 
-      // Ограничение на количество резервных копий
+      // Restriction on the number of backup copies
       if (backups.length > conf.backup.maxBackups) {
-        throw new MessageError('Нельзя так часто создавать резервные копии')
+        throw new MessageError('You can not back up your backups so often')
       }
 
-      // Одна резервная копия в указанный промежуток времени
+      // One backup at a specified time
       if (backups && backups.length) {
         const lastBackupDate = +new Date(backups.pop().date)
         if (lastBackupDate + conf.backup.temporaryRestraint > Date.now()) {
-          throw new MessageError('Нельзя так часто создавать резервные копии')
+          throw new MessageError('You can not back up your backups so often')
         }
       }
 
