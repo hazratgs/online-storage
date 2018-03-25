@@ -13,6 +13,7 @@ This is a cloud-key data store with a REST API interface, the database uses the 
  - Set key/value
  - Remove element it storage
  - Delete storage
+ - Create backup
  - Get backup list
  - Restoring the vault from a backup
 
@@ -181,7 +182,7 @@ axios.delete('https://storage.hazratgs.com/{token}')
 If you passed a parameter `backup` when creating a token, then your repository will have backup copies, which are created every 2 hours and stored during the day.
 In order to get a list of active copies of the repository, send the request:
 ```js
-axios.post('https://storage.hazratgs.com/{token}/backup/list')
+axios.get('https://storage.hazratgs.com/{token}/backup/list')
 ```
 
  <details>
