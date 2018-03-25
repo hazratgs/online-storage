@@ -2,14 +2,16 @@ const app = require('../index')
 const request = require('supertest')
 const expect = require('chai').expect
 
-const conf = require('../conf.json')
 const isGuid = require('is-guid').isGuid
 const password = 'qwerty'
 const user = { name: 'hazratgs', age: 25, city: 'Derbent' }
 
-let token = null
-let refreshToken = null
-let tokenPassword = null
+const token = {
+  token: null,
+  refreshToken: null,
+  tokenPassword: null,
+  tokenDomain: null
+}
 
 describe('POST /create', () => {
   it('create a new token', done => {
@@ -35,8 +37,6 @@ describe('POST /create', () => {
         if (err) throw new Error(err.message)
         expect(res.body.status).to.be.true
         expect(res.body.data.domains).to.include('127.0.0.1')
-        token = res.body.data.token
-        refreshToken = res.body.data.refreshToken
         done()
       })
   })
@@ -66,6 +66,8 @@ describe('POST /create', () => {
         expect(res.body.status).to.be.true
         expect(res.body.data.backup).to.be.true
         expect(res.body.data.domains).to.include('127.0.0.1')
+        token.token = res.body.data.token
+        token.refreshToken = res.body.data.refreshToken
         done()
       })
   })
@@ -80,7 +82,7 @@ describe('POST /create', () => {
         if (err) throw new Error(err.message)
         expect(res.body.status).to.be.true
         expect(res.body.data.password).to.be.true
-        tokenPassword = res.body.data.token
+        token.tokenPassword = res.body.data.token
         done()
       })
   })
@@ -89,7 +91,7 @@ describe('POST /create', () => {
 describe('POST /', () => {
   it('write a storage with domain access', done => {
     request(app)
-      .post(`/${token}`)
+      .post(`/${token.token}`)
       .send(user)
       .expect('Content-Type', /json/)
       .expect(200)
@@ -102,7 +104,7 @@ describe('POST /', () => {
 
   it('write a storage with password', done => {
     request(app)
-      .post(`/${tokenPassword}`)
+      .post(`/${token.tokenPassword}`)
       .set('password', password)
       .send(user)
       .expect('Content-Type', /json/)
@@ -118,7 +120,7 @@ describe('POST /', () => {
 describe('GET /', () => {
   it('get the name from the repository', done => {
     request(app)
-      .get(`/${token}/name`)
+      .get(`/${token.token}/name`)
       .expect('Content-Type', /json/)
       .expect(200)
       .end((err, res) => {
@@ -131,7 +133,7 @@ describe('GET /', () => {
 
   it('retrieve data from the repository', done => {
     request(app)
-      .get(`/${token}`)
+      .get(`/${token.token}`)
       .expect('Content-Type', /json/)
       .expect(200)
       .end((err, res) => {
@@ -143,10 +145,83 @@ describe('GET /', () => {
   })
 })
 
+describe('POST /:token/refresh', () => {
+  it('update token', done => {
+    request(app)
+      .post(`/${token.token}/refresh`)
+      .send({ refreshToken: token.refreshToken })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        token.token = res.body.data
+        done()
+      })
+  })
+})
+
+describe('Domain Access', () => {
+  it('creating a token and accessing it from an unresolved domain', done => {
+    request(app)
+      .post('/create')
+      .send({ domains: 'google.com', backup: true })
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        expect(res.body.data.domains).to.include('google.com')
+        token.tokenDomain = res.body.data.token
+        done()
+      })
+  })
+
+  it('prevent write to the vault from an unresolved domain', done => {
+    request(app)
+      .post(`/${token.tokenDomain}`)
+      .send(user)
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.false
+        done()
+      })
+  })
+})
+
+describe('POST /:token/backup', () => {
+  it('создаем резервную копию', done => {
+    request(app)
+      .post(`/${token.token}/backup`)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        done()
+      })
+  })
+
+  it('получаем список резервных копий', done => {
+    request(app)
+      .get(`/${token.token}/backup/list`)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) throw new Error(err.message)
+        expect(res.body.status).to.be.true
+        expect(res.body.data).to.be.an('array')
+        done()
+      })
+  })
+})
+
 describe('DELETE /', () => {
   it('remove name', done => {
     request(app)
-      .delete(`/${token}/name`)
+      .delete(`/${token.token}/name`)
       .expect('Content-Type', /json/)
       .expect(200)
       .end((err, res) => {
@@ -158,57 +233,12 @@ describe('DELETE /', () => {
 
   it('remove storage', done => {
     request(app)
-      .delete(`/${token}`)
+      .delete(`/${token.token}`)
       .expect('Content-Type', /json/)
       .expect(200)
       .end((err, res) => {
         if (err) throw new Error(err.message)
         expect(res.body.status).to.be.true
-        done()
-      })
-  })
-})
-
-describe('POST /:token/refresh', () => {
-  it('update token', done => {
-    request(app)
-      .post(`/${token}/refresh`)
-      .send({ refreshToken })
-      .expect('Content-Type', /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) throw new Error(err.message)
-        expect(res.body.status).to.be.true
-        done()
-      })
-  })
-})
-
-describe('Domain Access', () => {
-  it('creating a token and accessing it from an unresolved domain', done => {
-    request(app)
-      .post('/create')
-      .send({ domains: 'google.com' })
-      .expect('Content-Type', /json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) throw new Error(err.message)
-        expect(res.body.status).to.be.true
-        expect(res.body.data.domains).to.include('google.com')
-        token = res.body.data.token
-        done()
-      })
-  })
-
-  it('prevent write to the vault from an unresolved domain', done => {
-    request(app)
-      .post(`/${token}`)
-      .send(user)
-      .expect('Content-Type', /json/)
-      .expect(500)
-      .end((err, res) => {
-        if (err) throw new Error(err.message)
-        expect(res.body.status).to.be.false
         done()
       })
   })
