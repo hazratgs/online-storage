@@ -1,5 +1,5 @@
-## kurtuba
-[![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/kurtuba-client)
+## online-storage
+[![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/online-storage-client)
 
 This is a cloud-key data store with a REST API interface, the database uses the NoSQL MongoDB database.
 
@@ -23,10 +23,10 @@ Demand:
 
 Clone this repository:
 
-    git clone git@github.com:hazratgs/kurtuba.git
+    git clone git@github.com:hazratgs/online-storage.git
 Go to the directory:
 
-    cd kurtuba-storage
+    cd online-storage
 Install all dependencies:
 
     npm install
@@ -50,7 +50,7 @@ For the background work of the repository, you need to install the npm package [
 
 That's all!
 
-For convenience in working with the repository, you can use the kurtub-client library [kurtuba-client](https://www.npmjs.com/package/kurtuba-client)
+For convenience in working with the repository, you can use the kurtub-client library [online-storage-client](https://www.npmjs.com/package/online-storage-client)
 
 ## API
 *All examples are given using the axios JavaScript library*
@@ -64,7 +64,7 @@ All parameters (domains, backup, password) are optional:
 | password | set a password if you need to protect the storage from being written by third-party users |
 
 ```js
-axios.post('https://api.kurtuba.ru/create', {
+axios.post('https://storage.hazratgs.com/create', {
   domains: ['example.com', 'google.com'],
   backup: true,
   password: 'qwerty'
@@ -88,7 +88,7 @@ axios.post('https://api.kurtuba.ru/create', {
 #### Writing data to storage
 To write data to the storage, you need to transfer the data object:
 ```js
-axios.post('https://api.kurtuba.ru/{token}/set', {
+axios.post('https://storage.hazratgs.com/{token}', {
   name: 'hazratgs',
   age: 25,
   city: 'Derbent'
@@ -109,7 +109,7 @@ axios.post('https://api.kurtuba.ru/{token}/set', {
 
 #### Get property
 ```js
-axios.get('https://api.kurtuba.ru/{token}/get/name')
+axios.get('https://storage.hazratgs.com/{token}/name')
 ```
  <details>
   <summary>View Response</summary>
@@ -124,7 +124,7 @@ axios.get('https://api.kurtuba.ru/{token}/get/name')
 
 #### Get all storage
 ```js
-axios.get('https://api.kurtuba.ru/{token}/getAll')
+axios.get('https://storage.hazratgs.com/{token}')
 ```
 
  <details>
@@ -145,7 +145,7 @@ axios.get('https://api.kurtuba.ru/{token}/getAll')
 
 #### Remove property
 ```js
-axios.delete('https://api.kurtuba.ru/{token}/remove/city')
+axios.delete('https://storage.hazratgs.com/{token}/city')
 ```
 
  <details>
@@ -162,7 +162,7 @@ axios.delete('https://api.kurtuba.ru/{token}/remove/city')
 
 #### Delete storage
 ```js
-axios.delete('https://api.kurtuba.ru/{token}/delete')
+axios.delete('https://storage.hazratgs.com/{token}')
 ```
 
  <details>
@@ -181,7 +181,7 @@ axios.delete('https://api.kurtuba.ru/{token}/delete')
 If you passed a parameter `backup` when creating a token, then your repository will have backup copies, which are created every 2 hours and stored during the day.
 In order to get a list of active copies of the repository, send the request:
 ```js
-axios.post('https://api.kurtuba.ru/{token}/backup')
+axios.post('https://storage.hazratgs.com/{token}/backup/list')
 ```
 
  <details>
@@ -201,7 +201,7 @@ axios.post('https://api.kurtuba.ru/{token}/backup')
 #### Restoring the vault from a backup
 To return the store to a specific checkpoint, pass the date of the checkpoint:
 ```js
-axios.post('https://api.kurtuba.ru/{token}/backup/Sun Mar 04 2018 19:39:42 GMT+0300 (MSK)')
+axios.post('https://storage.hazratgs.com/{token}/backup/Sun Mar 04 2018 19:39:42 GMT+0300 (MSK)')
 ```
 
  <details>
