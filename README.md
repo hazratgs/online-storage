@@ -198,6 +198,25 @@ axios.post('https://storage.hazratgs.com/{token}/backup/list')
 ```
 </details>
 
+
+#### Create backup
+Backups are automatically created every 2 hours, but if you need to make a copy immediately, then this method will work for you.
+The method has limitations, there should not be more than 999 backups, and by default 1 backup can be done within 1 minute, when trying to do more, you get an error.
+```js
+axios.post('https://storage.hazratgs.com/{token}/backup')
+```
+
+ <details>
+  <summary>View Response</summary>
+
+```js 		 
+{
+  "status":  true
+}
+```
+</details>
+
+
 #### Restoring the vault from a backup
 To return the store to a specific checkpoint, pass the date of the checkpoint:
 ```js
