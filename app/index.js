@@ -2,6 +2,7 @@ const db = require('../db')
 const uuid = require('uuid')
 const MessageError = require('./messageError')
 const passwordHash = require('password-hash')
+const conf = require('../conf.json')
 
 // Models
 const TokenModel = require('./models/token')
@@ -289,8 +290,61 @@ module.exports = app => {
     }
   })
 
-  // Returns a list of available storage backups
+  // Создание резервной копии
   app.post('/:token/backup', async (req, res) => {
+    try {
+      const { token } = req.params
+      const { password } = req.headers
+      // Token data
+      const tokenParam = await tokenChecking(token)
+
+      // Verify Password
+      accessWithPassword(tokenParam, password)
+
+      // Available for backup
+      backupEnabled(tokenParam)
+
+      // Data in storage
+      const storage = await getStorage(tokenParam.connect)
+
+      // Available backups
+      const backups = await BackupStorageModel.BackupStorage.find({
+        connect: tokenParam.connect
+      })
+
+      // Ограничение на количество резервных копий
+      if (backups.length > conf.backup.maxBackups) {
+        throw new MessageError('Нельзя так часто создавать резервные копии')
+      }
+
+      // Одна резервная копия в указанный промежуток времени
+      if (backups && backups.length) {
+        const lastBackupDate = +new Date(backups.pop().date)
+        if (lastBackupDate + conf.backup.temporaryRestraint > Date.now()) {
+          throw new MessageError('Нельзя так часто создавать резервные копии')
+        }
+      }
+
+      // Forming the backup structure, the date is used as an identifier
+      const backupStorage = {
+        connect: tokenParam.connect,
+        storage: storage.storage,
+        date: Date.now()
+      }
+      // Save to db
+      await new BackupStorageModel.BackupStorage(backupStorage).save()
+
+      // Send the user a date that can be used as an identifier
+      return res.send({ status: true })
+    } catch (e) {
+      let message = 'Unexpected error'
+      if (e instanceof MessageError) message = e.message
+      res.status(500).send({ status: false, description: message })
+    }
+  })
+
+  // Returns a list of available storage backups
+  app.get('/:token/backup/list', async (req, res) => {
     try {
       const { token } = req.params
       const { password } = req.headers

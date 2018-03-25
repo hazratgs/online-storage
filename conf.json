@@ -3,6 +3,8 @@
   "mongoose": "mongodb://localhost/kurtubaStorage",
   "mongooseTest": "mongodb://localhost/kurtubaStorageTest",
   "backup": {
-    "lifetime": 86400000
+    "lifetime": 86400000,
+    "temporaryRestraint": 60000,
+    "maxBackups": 999
   }
 }
