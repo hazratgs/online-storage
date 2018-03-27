@@ -1,6 +1,6 @@
 {
-  "name": "kurtuba",
-  "version": "1.0.0",
+  "name": "online-storage",
+  "version": "2.0.0",
   "description": "⚡️A simple key-value storage based on MongoDB",
   "main": "index.js",
   "scripts": {
@@ -12,10 +12,12 @@
   "keywords": [
     "key/value",
     "storage",
+    "online storage",
+    "localStorage",
     "db"
   ],
   "author": "hazratgs",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.17.1",
     "body-parser": "^1.18.2",
