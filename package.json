@@ -4,7 +4,7 @@
   "description": "⚡️A simple key-value storage based on MongoDB",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start index.js",
+    "start": "pm2 start index.js -e err.log",
     "stop": "pm2 stop index.js",
     "dev": "nodemon index.js",
     "test": "TEST=true mocha --timeout 2000"
