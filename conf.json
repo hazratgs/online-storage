@@ -1,5 +1,5 @@
 {
-  "port": 3099,
+  "port": 3000,
   "mongoose": "mongodb://localhost/onlineStorage",
   "mongooseTest": "mongodb://localhost/onlineStorageTest",
   "backup": {
