@@ -1,5 +1,5 @@
 /*!
- * Kurtuba - free cloud key/value storage
+ * onlineStorage - free cloud key/value storage
  * Copyright(c) 2018 @hazratgs
  * MIT Licensed
 */

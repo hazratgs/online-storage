@@ -1,7 +1,7 @@
 {
   "port": 3099,
-  "mongoose": "mongodb://localhost/kurtubaStorage",
-  "mongooseTest": "mongodb://localhost/kurtubaStorageTest",
+  "mongoose": "mongodb://localhost/onlineStorage",
+  "mongooseTest": "mongodb://localhost/onlineStorageTest",
   "backup": {
     "lifetime": 86400000,
     "temporaryRestraint": 60000,
