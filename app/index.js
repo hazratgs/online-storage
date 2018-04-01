@@ -329,6 +329,7 @@ module.exports = app => {
       const backupStorage = {
         connect: tokenParam.connect,
         storage: storage.storage,
+        important: true,
         date: Date.now()
       }
       // Save to db
