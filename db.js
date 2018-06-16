@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const conf = require('./conf.json')
+const conf = require('./conf')
 mongoose.Promise = global.Promise
 
 mongoose.connect(process.env.TEST ? conf.mongooseTest : conf.mongoose)

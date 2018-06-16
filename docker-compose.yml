@@ -1,0 +1,19 @@
+version: '2'
+services:
+  web:
+    build: './'
+    command: node index.js
+    ports:
+     - 3000:3000
+    volumes:
+      - ./:/www
+    environment:
+      DATABASE_URL: mongodb://localhost@db/onlineStorage
+      PORT: 3000
+      BACKUP_LIFETIME: 86400000
+      BACKUP_TEMPORARY_RESTRAINT: 60000
+      BACKUP_MAX_BACKUPS: 999
+    depends_on:
+      - db
+  db:
+    image: mongo:latest

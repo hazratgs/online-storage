@@ -3,11 +3,10 @@
  * Copyright(c) 2018 @hazratgs
  * MIT Licensed
 */
-
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const conf = require('./conf.json')
+const conf = require('./conf')
 const cors = require('cors')
 
 app.use(cors())

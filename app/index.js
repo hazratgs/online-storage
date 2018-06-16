@@ -2,7 +2,7 @@ const db = require('../db')
 const uuid = require('uuid')
 const MessageError = require('./messageError')
 const passwordHash = require('password-hash')
-const conf = require('../conf.json')
+const conf = require('../conf')
 
 // Models
 const TokenModel = require('./models/token')

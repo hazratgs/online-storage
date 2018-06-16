@@ -1,6 +1,6 @@
 const cron = require('node-cron')
 const db = require('../db')
-const conf = require('../conf.json')
+const conf = require('../conf')
 
 // Models
 const TokenModel = require('./models/token')
